@@ -3,7 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>하루 — 오늘의 이야기</title>
+<title>하루 — 오늘의 감정 일기</title>
+<meta name="description" content="하루는 오늘 하루를 일기로 기록하면, 감정을 분석해 나만의 애니메이션을 만들어주는 감성 일기 서비스입니다.">
+<meta name="keywords" content="감성일기, 오늘의 일기, 애니메이션 일기, 감정 기록, 하루 일기, 일기 앱">
+<meta name="author" content="하루">
+<meta name="robots" content="index, follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="하루 — 오늘의 감정 일기">
+<meta property="og:description" content="오늘 하루를 글로 적으면, 감정을 분석해 나만의 애니메이션으로 만들어드립니다.">
+<meta property="og:url" content="https://haru-diary.web.app/">
+<meta property="og:site_name" content="하루">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="하루 — 오늘의 감정 일기">
+<meta name="twitter:description" content="오늘 하루를 글로 적으면, 감정을 분석해 나만의 애니메이션으로 만들어드립니다.">
+<link rel="canonical" href="https://haru-diary.web.app/">
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973009474553970"
      crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
@@ -126,6 +139,35 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 #share-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A1A2E;border:1px solid rgba(255,255,255,.1);color:var(--text);padding:14px 24px;border-radius:12px;font-size:14px;z-index:999;transition:transform .4s ease;white-space:nowrap;}
 #share-toast.show{transform:translateX(-50%) translateY(0);}
 ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* FOOTER */
+.site-footer{padding:32px 28px 28px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:8px;}
+.footer-links{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
+.footer-link{font-size:12px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s;}
+.footer-link:hover{color:var(--text);}
+.footer-copy{font-size:11px;color:rgba(113,113,122,.5);}
+
+/* ABOUT VIEW */
+#v-about{background:var(--bg);overflow-y:auto;}
+.about-container{padding:40px 28px 60px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
+.about-hero{display:flex;flex-direction:column;gap:12px;}
+.about-title{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:600;color:var(--accent);}
+.about-subtitle{font-size:15px;color:var(--muted);line-height:1.7;}
+.about-section-title{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:400;color:var(--text);margin-bottom:10px;}
+.about-text{font-size:14px;color:var(--muted);line-height:1.9;}
+.about-features{display:flex;flex-direction:column;gap:14px;margin-top:4px;}
+.about-feature{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;}
+.about-feature-title{font-size:14px;color:var(--text);font-weight:500;}
+.about-feature-desc{font-size:13px;color:var(--muted);line-height:1.7;}
+
+/* PRIVACY VIEW */
+#v-privacy{background:var(--bg);overflow-y:auto;}
+.privacy-container{padding:40px 28px 80px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:28px;}
+.privacy-title{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:600;color:var(--text);}
+.privacy-updated{font-size:12px;color:var(--muted);margin-top:-16px;}
+.privacy-section-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:8px;}
+.privacy-text{font-size:13px;color:var(--muted);line-height:1.9;}
+.privacy-block{display:flex;flex-direction:column;gap:6px;}
 </style>
 </head>
 <body>
@@ -153,6 +195,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   <div class="cal-header">
     <div class="cal-logo">하루</div>
     <div style="display:flex; gap:8px;">
+      <button class="btn-to-cal" style="border-color:var(--border); color:var(--muted); padding:8px 16px;" onclick="showView('about')">소개</button>
       <button class="btn-to-cal" style="border-color:var(--border); color:var(--muted); padding:8px 16px;" onclick="showView('contact')">제휴 문의</button>
       <button class="cal-btn-write" onclick="openWrite()">오늘 일기 쓰기</button>
     </div>
@@ -163,6 +206,30 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <button onclick="changeMonth(1)">›</button>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
+
+  <!-- AdSense 광고 영역 -->
+  <!-- 광고 단위를 수동으로 추가하려면 AdSense 대시보드에서 광고 단위를 만들고
+       아래 ins 태그의 data-ad-slot 값을 실제 슬롯 ID로 교체하세요.
+       자동 광고(Auto Ads)를 사용하는 경우 아래 ins 태그는 필요 없습니다.
+  <div style="padding:0 28px 8px;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-2973009474553970"
+         data-ad-slot="여기에_슬롯ID_입력"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  -->
+
+  <footer class="site-footer">
+    <div class="footer-links">
+      <span class="footer-link" onclick="showView('about')">서비스 소개</span>
+      <span class="footer-link" onclick="showView('privacy')">개인정보처리방침</span>
+      <span class="footer-link" onclick="showView('contact')">제휴 문의</span>
+    </div>
+    <div class="footer-copy">&copy; 2025 하루. All rights reserved.</div>
+  </footer>
 </div>
 
 <!-- WRITE -->
@@ -251,6 +318,112 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       
       <button type="submit" class="btn-submit">문의 보내기</button>
     </form>
+  </div>
+</div>
+
+<!-- ABOUT VIEW -->
+<div class="view hidden" id="v-about">
+  <div class="write-header">
+    <button class="btn-back" onclick="showView('calendar')">←</button>
+    <div class="write-date">서비스 소개</div>
+  </div>
+  <div class="about-container">
+    <div class="about-hero">
+      <div class="about-title">하루</div>
+      <p class="about-subtitle">오늘 하루를 일기로 적으면,<br>감정을 분석해 나만의 애니메이션을 만들어드립니다.</p>
+    </div>
+
+    <div>
+      <div class="about-section-title">하루가 하는 일</div>
+      <div class="about-features">
+        <div class="about-feature">
+          <div class="about-feature-title">✦ 감정 분석</div>
+          <div class="about-feature-desc">일기 속 문장을 분석해 기쁨, 슬픔, 설렘, 외로움 등 9가지 감정 중 오늘의 감정을 찾아냅니다.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-title">✦ 감성 애니메이션</div>
+          <div class="about-feature-desc">감정과 행동, 등장인물, 장소를 조합해 오늘 하루만을 위한 캔버스 애니메이션을 자동으로 생성합니다.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-title">✦ 4가지 그림체</div>
+          <div class="about-feature-desc">애니풍, 만화체, 미니멀, 스케치 중 원하는 스타일을 선택해 나만의 분위기로 기록할 수 있습니다.</div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-title">✦ 공유하기</div>
+          <div class="about-feature-desc">완성된 하루의 애니메이션을 링크로 공유해 소중한 사람들과 오늘의 감정을 나눠보세요.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="about-section-title">개인 정보 보호</div>
+      <p class="about-text">하루에 기록된 모든 일기는 사용자 기기의 브라우저 로컬 스토리지에만 저장되며, 외부 서버로 전송되거나 수집되지 않습니다. 일기는 오직 나만 볼 수 있습니다.</p>
+    </div>
+
+    <div>
+      <div class="about-section-title">문의</div>
+      <p class="about-text">제휴, 비즈니스, 기타 문의는 <span class="footer-link" onclick="showView('contact')">제휴 문의 페이지</span>를 통해 연락해 주세요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- PRIVACY POLICY VIEW -->
+<div class="view hidden" id="v-privacy">
+  <div class="write-header">
+    <button class="btn-back" onclick="showView('calendar')">←</button>
+    <div class="write-date">개인정보처리방침</div>
+  </div>
+  <div class="privacy-container">
+    <div>
+      <div class="privacy-title">개인정보처리방침</div>
+      <div class="privacy-updated">최종 업데이트: 2025년 1월 1일</div>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">1. 개요</div>
+      <p class="privacy-text">'하루'(이하 "서비스")는 사용자의 개인정보를 중요하게 생각합니다. 본 방침은 서비스 이용 시 수집·사용되는 정보에 대해 설명합니다.</p>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">2. 수집하는 정보</div>
+      <p class="privacy-text">서비스는 사용자가 직접 입력한 일기 내용을 수집하지 않습니다. 모든 일기 데이터는 사용자 기기의 브라우저 로컬 스토리지에만 저장되며, 외부 서버로 전송되지 않습니다.<br><br>제휴 문의 양식을 통해 제출 시, 이름·이메일·문의 내용이 Formspree를 통해 수집될 수 있습니다.</p>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">3. 제3자 서비스</div>
+      <p class="privacy-text">본 서비스는 다음 제3자 서비스를 사용합니다. 각 서비스는 자체 개인정보처리방침을 적용합니다.</p>
+      <p class="privacy-text" style="margin-top:10px;">
+        <strong style="color:var(--text);">Google AdSense</strong><br>
+        광고 제공을 위해 Google AdSense를 사용합니다. Google은 쿠키를 사용해 맞춤형 광고를 표시할 수 있습니다. Google 광고 및 개인정보 설정은 <a href="https://adssettings.google.com" target="_blank" rel="noopener" style="color:var(--accent);">Google 광고 설정</a>에서 관리할 수 있습니다.
+      </p>
+      <p class="privacy-text" style="margin-top:10px;">
+        <strong style="color:var(--text);">Disqus 댓글</strong><br>
+        일기 항목에 댓글 기능을 제공하기 위해 Disqus를 사용합니다. Disqus는 자체적인 데이터 수집 정책을 따릅니다.
+      </p>
+      <p class="privacy-text" style="margin-top:10px;">
+        <strong style="color:var(--text);">Google Fonts</strong><br>
+        한글 폰트 제공을 위해 Google Fonts를 사용합니다.
+      </p>
+      <p class="privacy-text" style="margin-top:10px;">
+        <strong style="color:var(--text);">Formspree</strong><br>
+        제휴 문의 양식 제출을 위해 Formspree를 사용합니다.
+      </p>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">4. 쿠키</div>
+      <p class="privacy-text">본 서비스는 직접적으로 쿠키를 생성하지 않습니다. 다만, Google AdSense 및 Disqus 등 제3자 서비스가 자체 쿠키를 사용할 수 있습니다. 브라우저 설정에서 쿠키 사용을 거부할 수 있으나, 일부 기능이 제한될 수 있습니다.</p>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">5. 사용자 권리</div>
+      <p class="privacy-text">사용자는 브라우저의 '사이트 데이터 삭제' 기능을 통해 언제든지 로컬 스토리지에 저장된 일기 데이터를 삭제할 수 있습니다.</p>
+    </div>
+
+    <div class="privacy-block">
+      <div class="privacy-section-title">6. 문의</div>
+      <p class="privacy-text">개인정보처리방침에 대한 문의는 제휴 문의 페이지를 통해 연락 주시기 바랍니다.</p>
+    </div>
   </div>
 </div>
 
