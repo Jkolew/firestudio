@@ -18,9 +18,11 @@
 - **장식 요소**: 달력 상단에 침대에서 자고 있는 귀여운 곰돌이 캐릭터 및 ZZZ 애니메이션 추가 (최신 업데이트).
 
 ## Current Task: Community and Interaction
-1. **Disqus Integration (`diary.html`)**:
-   - 일기 상세 보기 모달(`entry-modal`) 내부에 Disqus 댓글 창(`disqus_thread`) 추가.
+### 4. Disqus 댓글 기능 통합
+- **구현 위치**: `index.html` 및 `diary.html`의 일기 상세 모달(`entry-modal`).
+- **주요 기능**:
    - 각 날짜별로 독립적인 댓글 스레드가 생성되도록 `page.identifier`와 `page.url`을 동적으로 설정.
    - 모달을 열 때마다 해당 날짜의 댓글을 불러오도록 `DISQUS.reset` 로직 구현.
-2. **Auto-Deployment**:
-   - GitHub 저장소 연결을 통해 푸시 시 실시간 배포 환경 구축 완료.
+   - 사용자가 제공한 Disqus 숏네임(`ads-qjmpg3nuak`) 적용.
+   - 스크립트가 아직 로드되지 않은 경우 동적으로 로드하는 초기화 로직 포함.
+
