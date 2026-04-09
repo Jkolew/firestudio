@@ -164,6 +164,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   <div class="modal-card">
     <div class="modal-date" id="modal-date"></div>
     <div class="modal-text" id="modal-text"></div>
+    
+    <!-- DISQUS THREAD -->
+    <div id="disqus_thread" style="margin-top:24px; padding-top:24px; border-top:1px solid var(--border); min-height: 200px;"></div>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
     <div class="modal-actions">
       <button class="modal-btn primary" onclick="playFromModal()">▶ 애니메이션 보기</button>
       <button class="modal-btn" onclick="shareFromModal()">↗ 공유</button>
@@ -407,6 +412,33 @@ function openEntryModal(entry){
   document.getElementById('modal-date').textContent=fmtDateKo(entry.date)+' · '+emotionLabel(entry.emotion);
   document.getElementById('modal-text').textContent=entry.text;
   document.getElementById('entry-modal').classList.add('open');
+  
+  // Update Disqus
+  const pageUrl = window.location.origin + window.location.pathname + '#!entry=' + entry.date;
+  const pageId = 'entry-' + entry.date;
+  
+  if (typeof DISQUS !== 'undefined') {
+    DISQUS.reset({
+      reload: true,
+      config: function () {
+        this.page.identifier = pageId;
+        this.page.url = pageUrl;
+        this.page.title = fmtDateKo(entry.date) + '의 일기';
+      }
+    });
+  } else {
+    window.disqus_config = function () {
+      this.page.identifier = pageId;
+      this.page.url = pageUrl;
+      this.page.title = fmtDateKo(entry.date) + '의 일기';
+    };
+    (function() {
+      var d = document, s = d.createElement('script');
+      s.src = 'https://jko-1.disqus.com/embed.js';
+      s.setAttribute('data-timestamp', +new Date());
+      (d.head || d.body).appendChild(s);
+    })();
+  }
 }
 function closeEntryModal(){document.getElementById('entry-modal').classList.remove('open');}
 function closeModal(e){if(e.target.id==='entry-modal')closeEntryModal();}

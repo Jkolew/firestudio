@@ -14,11 +14,13 @@
 - **장면 시퀀스 엔진**: 문장 단위로 장면을 분리하고, 등장인물 수와 사물을 감지하여 Canvas 애니메이션으로 재생.
 - **상호작용 캘린더**: 날짜별 일기 저장 여부 확인 및 작성된 일기 다시 보기 모달.
 - **공유하기**: 작성된 일기를 고유 링크로 인코딩하여 클립보드에 복사.
+- **댓글 기능**: Disqus를 연동하여 날짜별 일기에 대해 댓글을 남기고 소통할 수 있는 기능 추가.
 - **장식 요소**: 달력 상단에 침대에서 자고 있는 귀여운 곰돌이 캐릭터 및 ZZZ 애니메이션 추가 (최신 업데이트).
 
-## Current Task: Design Polish and Animation Enhancements
-1. **Sleeping Bear Added (`index.html`)**:
-   - 달력 화면(`v-calendar`) 상단에 CSS로 제작된 곰돌이 캐릭터와 침대 추가.
-   - 곰돌이가 숨 쉬는 듯한 `sleep-wiggle` 효과와 공중에 떠오르는 `zzz-fly` 애니메이션 구현.
+## Current Task: Community and Interaction
+1. **Disqus Integration (`diary.html`)**:
+   - 일기 상세 보기 모달(`entry-modal`) 내부에 Disqus 댓글 창(`disqus_thread`) 추가.
+   - 각 날짜별로 독립적인 댓글 스레드가 생성되도록 `page.identifier`와 `page.url`을 동적으로 설정.
+   - 모달을 열 때마다 해당 날짜의 댓글을 불러오도록 `DISQUS.reset` 로직 구현.
 2. **Auto-Deployment**:
    - GitHub 저장소 연결을 통해 푸시 시 실시간 배포 환경 구축 완료.
