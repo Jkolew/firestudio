@@ -154,7 +154,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
   <div class="diary-overlay">
     <div class="player-action-row">
-      <button class="btn-share" onclick="window.location.href='index.html'">나도 써보기</button>
+      <button class="btn-share" onclick="window.location.href='diary.html'">나도 써보기</button>
     </div>
   </div>
 </div>
@@ -1206,7 +1206,13 @@ function vignetteOverlay(ctx,W,H,str=.68){
 }
 
 // ═══ INIT ═══
-window.addEventListener('resize',()=>{//   const c=document.getElementById('anim-canvas');//   if(c&&state.view==='player'&&state.currentEntry){//     c.width=window.innerWidth;c.height=window.innerHeight;//     cancelAnimationFrame(state.animFrame);state.animFrame=null;//     startSceneSequence(c,state.currentEntry.text,state.currentEntry.style);//   }
+window.addEventListener('resize',()=>{
+  const c=document.getElementById('anim-canvas');
+  if(c&&state.view==='player'&&state.currentEntry){
+    c.width=window.innerWidth;c.height=window.innerHeight;
+    cancelAnimationFrame(state.animFrame);state.animFrame=null;
+    startSceneSequence(c,state.currentEntry.text,state.currentEntry.style);
+  }
 });
 if(!checkShare()){renderCalendar();showView('calendar');}
 </script>
