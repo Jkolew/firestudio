@@ -1,29 +1,24 @@
-# CarNeRF - AI Used Car Platform (v3)
+# 하루 (Haru) — 오늘의 이야기
 
 ## Overview
+'하루'는 사용자의 일기 내용을 분석하여 감정에 어울리는 애니메이션을 생성해주는 웹 기반 감성 일기장 서비스입니다. 문장별로 인물의 수나 사물을 감지하여 캔버스에 동적인 장면을 그려내며, 포근하고 따뜻한 디자인을 지향합니다.
 
-This project is a landing page for the "CarNeRF" AI-powered used car platform. The primary goal is to immediately showcase the app's core AI scanning technology to visitors on the first screen without requiring them to scroll.
+## Style and Design Patterns
+- **컬러 팔레트**: 어두운 밤하늘 배경(`--bg: #08080F`)에 따뜻한 골드 톤(`--accent: #C4A882`)을 포인트로 사용.
+- **타이포그래피**: 'Noto Serif KR'을 사용하여 감성적인 일기 느낌을 강조.
+- **UI 구성**: 캘린더 뷰, 일기 작성 뷰, 애니메이션 플레이어 뷰, 공유 뷰로 구성된 싱글 페이지 애플리케이션(SPA).
+- **시각 효과**: CSS 애니메이션과 HTML5 Canvas를 활용한 입자 효과(Particles), 비/별 효과 등.
 
-## Design and Features
+## Implemented Features
+- **감정 분석**: 일기 텍스트 내 키워드를 분석하여 9가지 감정(행복, 슬픔, 평온 등) 감지.
+- **장면 시퀀스 엔진**: 문장 단위로 장면을 분리하고, 등장인물 수와 사물을 감지하여 Canvas 애니메이션으로 재생.
+- **상호작용 캘린더**: 날짜별 일기 저장 여부 확인 및 작성된 일기 다시 보기 모달.
+- **공유하기**: 작성된 일기를 고유 링크로 인코딩하여 클립보드에 복사.
+- **장식 요소**: 달력 상단에 침대에서 자고 있는 귀여운 곰돌이 캐릭터 및 ZZZ 애니메이션 추가 (최신 업데이트).
 
-*   **Single-Screen Hero Animation:** The entire first viewport is a dynamic hero section featuring the AI scan animation. This immediately communicates the app's main function.
-*   **Automated Animation:** The Genesis GV80 scan animation starts automatically on page load, providing an engaging experience without user interaction.
-*   **Integrated Call-to-Action:** A clear headline and App Store download buttons are integrated directly into the hero/scan section, prompting users to act.
-*   **Clean Navigation:** A simple, clean navigation bar at the top provides essential links, retaining the 'CarNeRF' branding.
-
-## Current Plan: Merge AI Scan into an Auto-Playing Hero Section
-
-1.  **Consolidate into a Single Hero Section (`index.html`):**
-    *   Remove the `hero-v2` (hey dealer style) and `msg-sec` sections.
-    *   Elevate the `scan-sec` to be the primary, full-screen (`100vh`) hero section.
-    *   Add a compelling headline and the App Store buttons directly inside this new hero section.
-
-2.  **Enable Auto-Play Animation (`index.html` - script):**
-    *   Remove the Intersection Observer that triggers the animation on scroll.
-    *   Modify the JavaScript to call the `runScanAnimation()` function automatically when the page loads.
-
-3.  **Update Styles for New Layout (`custom.css`):**
-    *   Delete styles related to `hero-v2`.
-    *   Modify `scan-sec` and `scan-stage` to function as a full-viewport hero section.
-    *   Revert the navigation bar and logo to the original 'CarNeRF' branding and style.
-    *   Adjust the layout and positioning of the scan HUD, markers, and report to fit aesthetically within the new full-screen context.
+## Current Task: Design Polish and Animation Enhancements
+1. **Sleeping Bear Added (`index.html`)**:
+   - 달력 화면(`v-calendar`) 상단에 CSS로 제작된 곰돌이 캐릭터와 침대 추가.
+   - 곰돌이가 숨 쉬는 듯한 `sleep-wiggle` 효과와 공중에 떠오르는 `zzz-fly` 애니메이션 구현.
+2. **Auto-Deployment**:
+   - GitHub 저장소 연결을 통해 푸시 시 실시간 배포 환경 구축 완료.

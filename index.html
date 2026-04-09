@@ -95,6 +95,20 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .btn-to-cal:hover{color:rgba(255,255,255,.8);}
 .share-badge{position:absolute;top:20px;right:20px;z-index:20;background:rgba(196,168,130,.15);border:1px solid rgba(196,168,130,.3);color:var(--accent);padding:5px 12px;border-radius:100px;font-size:11px;}
 
+/* CONTACT */
+#v-contact{background:var(--bg); overflow-y:auto;}
+.contact-container{padding:40px 28px; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:24px;}
+.contact-title{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--accent); margin-bottom:8px;}
+.contact-desc{font-size:14px; color:var(--muted); line-height:1.6;}
+.contact-form{display:flex; flex-direction:column; gap:16px;}
+.form-group{display:flex; flex-direction:column; gap:8px;}
+.form-group label{font-size:12px; color:var(--muted); padding-left:4px;}
+.form-input, .form-textarea{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; color:var(--text); font-family:inherit; font-size:14px; outline:none; transition:border-color .2s;}
+.form-input:focus, .form-textarea:focus{border-color:var(--accent);}
+.form-textarea{resize:none; min-height:150px;}
+.btn-submit{background:var(--accent); color:#08080F; border:none; padding:16px; border-radius:100px; font-size:15px; font-weight:600; cursor:pointer; transition:opacity .2s; margin-top:10px;}
+.btn-submit:hover{opacity:0.9;}
+
 /* MODAL */
 .modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
@@ -135,7 +149,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
   <div class="cal-header">
     <div class="cal-logo">하루</div>
-    <button class="cal-btn-write" onclick="openWrite()">오늘 일기 쓰기</button>
+    <div style="display:flex; gap:8px;">
+      <button class="btn-to-cal" style="border-color:var(--border); color:var(--muted); padding:8px 16px;" onclick="showView('contact')">제휴 문의</button>
+      <button class="cal-btn-write" onclick="openWrite()">오늘 일기 쓰기</button>
+    </div>
   </div>
   <div class="cal-month-nav">
     <button onclick="changeMonth(-1)">‹</button>
@@ -199,6 +216,38 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="player-action-row">
       <button class="btn-share" onclick="window.location.href='index.html'">나도 써보기</button>
     </div>
+  </div>
+</div>
+
+<!-- CONTACT VIEW -->
+<div class="view hidden" id="v-contact">
+  <div class="write-header">
+    <button class="btn-back" onclick="showView('calendar')">←</button>
+    <div class="write-date">제휴 및 비즈니스 문의</div>
+  </div>
+  <div class="contact-container">
+    <div>
+      <h2 class="contact-title">함께하고 싶으신가요?</h2>
+      <p class="contact-desc">'하루'와 함께 따뜻한 가치를 만들어갈 파트너를 기다립니다. 아래 양식을 작성해 주시면 검토 후 연락드리겠습니다.</p>
+    </div>
+    
+    <form action="https://formspree.io/f/mjgpdror" method="POST" class="contact-form">
+      <div class="form-group">
+        <label>성함 / 기업명</label>
+        <input type="text" name="name" class="form-input" placeholder="이름 또는 회사명을 입력해 주세요" required>
+      </div>
+      <div class="form-group">
+        <label>답변받을 이메일</label>
+        <input type="email" name="_replyto" class="form-input" placeholder="example@email.com" required>
+      </div>
+      <div class="form-group">
+        <label>문의 내용</label>
+        <textarea name="message" class="form-textarea" placeholder="제휴 제안이나 궁금하신 내용을 자유롭게 적어주세요" required></textarea>
+      </div>
+      <input type="hidden" name="_subject" value="[하루] 새로운 제휴 문의가 접수되었습니다">
+      
+      <button type="submit" class="btn-submit">문의 보내기</button>
+    </form>
   </div>
 </div>
 
