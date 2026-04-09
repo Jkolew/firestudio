@@ -17,7 +17,32 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 /* CALENDAR */
 #v-calendar{background:var(--bg);overflow-y:auto;}
-.cal-header{padding:40px 32px 20px;display:flex;align-items:center;justify-content:space-between;}
+.bear-section{padding:40px 32px 0; display:flex; justify-content:center; align-items:center; flex-direction:column; gap:12px;}
+.bed{width:140px; height:80px; background:#2A2A3A; border-radius:20px 20px 10px 10px; position:relative; border:2px solid var(--border); box-shadow:0 10px 30px rgba(0,0,0,0.5);}
+.pillow{width:40px; height:25px; background:#3F3F5F; border-radius:8px; position:absolute; top:10px; left:10px;}
+.blanket{width:90px; height:60px; background:linear-gradient(135deg, var(--accent), #A68B6A); border-radius:10px 0 10px 0; position:absolute; bottom:0; right:0; z-index:2; border-top:2px solid rgba(255,255,255,0.1);}
+.bear{position:absolute; top:10px; left:40px; z-index:1; animation:sleep-wiggle 4s ease-in-out infinite;}
+.bear-head{width:45px; height:38px; background:#7A5C44; border-radius:50%; position:relative;}
+.bear-ear-l, .bear-ear-r{width:15px; height:15px; background:#7A5C44; border-radius:50%; position:absolute; top:-5px;}
+.bear-ear-l{left:0;} .bear-ear-r{right:0;}
+.bear-eye-l, .bear-eye-r{width:4px; height:2px; background:rgba(0,0,0,0.5); position:absolute; top:18px; border-radius:2px;}
+.bear-eye-l{left:12px;} .bear-eye-r{right:12px;}
+.bear-nose{width:8px; height:5px; background:#4A3425; border-radius:50%; position:absolute; top:24px; left:50%; transform:translateX(-50%);}
+.zzz{position:absolute; top:-20px; right:-10px; color:var(--accent); font-size:12px; font-weight:600; opacity:0; animation:zzz-fly 3s linear infinite;}
+.zzz:nth-child(2){animation-delay:1s;}
+.zzz:nth-child(3){animation-delay:2s;}
+
+@keyframes sleep-wiggle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05) translateY(-2px); }
+}
+@keyframes zzz-fly {
+  0% { transform: translate(0,0); opacity:0; }
+  20% { opacity:0.8; }
+  100% { transform: translate(20px, -40px); opacity:0; }
+}
+
+.cal-header{padding:20px 32px 20px;display:flex;align-items:center;justify-content:space-between;}
 .cal-logo{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-.5px;}
 .cal-btn-write{background:var(--accent);color:#08080F;border:none;padding:10px 22px;border-radius:100px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .2s;}
 .cal-btn-write:hover{opacity:.85;}
@@ -90,6 +115,24 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 <!-- CALENDAR -->
 <div class="view" id="v-calendar">
+  <div class="bear-section">
+    <div class="bed">
+      <div class="pillow"></div>
+      <div class="bear">
+        <div class="bear-head">
+          <div class="bear-ear-l"></div>
+          <div class="bear-ear-r"></div>
+          <div class="bear-eye-l"></div>
+          <div class="bear-eye-r"></div>
+          <div class="bear-nose"></div>
+        </div>
+        <div class="zzz">Z</div>
+        <div class="zzz">Z</div>
+        <div class="zzz">Z</div>
+      </div>
+      <div class="blanket"></div>
+    </div>
+  </div>
   <div class="cal-header">
     <div class="cal-logo">하루</div>
     <button class="cal-btn-write" onclick="openWrite()">오늘 일기 쓰기</button>
