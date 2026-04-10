@@ -1443,7 +1443,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
 
   for(const prop of props){
     if(prop==='bag'){
-      const bx=cx-S*1.4,by=GY-S*.95;
+      const bx=cx-S*2.8,by=GY-S*.95;
       ctx.save();
       ctx.fillStyle=color;ctx.strokeStyle=pal.outline||'rgba(120,80,50,0.32)';ctx.lineWidth=Math.max(1,S*.09);
       roundRect(ctx,bx-S*.38,by-S*.52,S*.76,S*.72,S*.1);ctx.fill();ctx.stroke();
@@ -1456,7 +1456,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.restore();
     }
     else if(prop==='flower'){
-      const fx=cx+S*1.25,fy=GY-S*.88;
+      const fx=cx+S*2.6,fy=GY-S*.88;
       ctx.save();
       // Stem
       ctx.strokeStyle='rgba(100,180,100,0.75)';ctx.lineWidth=S*.06;ctx.lineCap='round';
@@ -1491,7 +1491,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.restore();
     }
     else if(prop==='ball'){
-      const bx=cx+S*1.6,by=GY-S*.22;
+      const bx=cx+S*2.8,by=GY-S*.22;
       ctx.save();
       ctx.fillStyle='rgba(255,255,255,0.85)';ctx.strokeStyle='rgba(60,60,60,0.45)';ctx.lineWidth=S*.07;
       ctx.beginPath();ctx.arc(bx,by,S*.32,0,Math.PI*2);ctx.fill();ctx.stroke();
@@ -1503,7 +1503,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.restore();
     }
     else if(prop==='phone'){
-      const px=cx+S*.92,py=GY-S*.98;
+      const px=cx+S*2.7,py=GY-S*.98;
       ctx.save();
       ctx.fillStyle='#0A0A20';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.5,S*.1);
       ctx.beginPath();roundRect(ctx,px-S*.22,py-S*.4,S*.44,S*.72,S*.07);ctx.fill();ctx.stroke();
@@ -1571,7 +1571,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.restore();
     }
     else if(prop==='coffee'){
-      const px=cx+S*1.12,py=GY-S*.32;
+      const px=cx+S*2.5,py=GY-S*.32;
       ctx.save();
       ctx.fillStyle='#1E0C04';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,S*.08);
       // Cup body
@@ -1594,7 +1594,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.restore();
     }
     else if(prop==='food'){
-      const px=cx+S*.92,py=GY-S*.22;
+      const px=cx+S*2.6,py=GY-S*.22;
       ctx.save();
       ctx.fillStyle='#EEE6D8';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,S*.08);
       // Bowl
@@ -1620,7 +1620,7 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.font=`bold ${S*.72}px serif`;ctx.textAlign='center';
       for(let i=0;i<3;i++){
         const angle=t*.65+i*(Math.PI*2/3);
-        const nx=cx+Math.cos(angle)*S*1.8;
+        const nx=cx+Math.cos(angle)*S*2.8;
         const ny=GY-S*4.5+Math.sin(t*1.2+i*1.4)*S*.7;
         ctx.globalAlpha=.38+.38*Math.abs(Math.sin(t*1.3+i*2.2));
         ctx.fillStyle=pal.accent;
@@ -2153,11 +2153,17 @@ function drawDongliChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx){
     const sp=Math.abs(Math.sin(t*3.5))*S*0.08;
     lFx=-r*0.5;rFx=r*0.5;lFy=-sp;rFy=-sp;
   }
-  const legW=r*0.38,footR=r*0.22;
+  const footR=r*0.24;
   [[0,bcy+r*0.84,lFx,lFy,-1],[0,bcy+r*0.84,rFx,rFy,1]].forEach(([sx,sy,ex,ey,side])=>{
-    drawDongliLimb(ctx,sx,sy,ex,ey,legW,col.body,ol,r*0.072);
-    ctx.save();ctx.fillStyle=col.body;ctx.strokeStyle=ol;ctx.lineWidth=r*0.072;
-    ctx.beginPath();ctx.ellipse(ex+side*footR*0.45,ey,footR*1.08,footR*0.68,0,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+    drawTaperedLimb(ctx,sx,sy,r*0.26,ex,ey,r*0.17,col.body,ol,r*0.068);
+    // Cute rounded foot, tilted outward
+    const footAng=side*0.32;
+    ctx.save();ctx.translate(ex,ey);ctx.rotate(footAng);
+    ctx.fillStyle=col.body;ctx.strokeStyle=ol;ctx.lineWidth=r*0.068;
+    ctx.beginPath();ctx.ellipse(side*footR*0.52,0,footR*1.18,footR*0.72,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.42)';
+    ctx.beginPath();ctx.ellipse(side*footR*0.28,-footR*0.22,footR*0.44,footR*0.24,footAng,0,Math.PI*2);ctx.fill();
+    ctx.restore();
   });
 
   // ARMS
@@ -2174,11 +2180,15 @@ function drawDongliChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx){
   else if(action==='sleep'){lA={sx:-r*0.9,sy:bcy+r*0.28,ex:-r*1.5,ey:bcy+r*0.54};rA={sx:r*0.9,sy:bcy+r*0.28,ex:r*1.5,ey:bcy+r*0.54};}
   else if(['sad','lonely'].includes(emotion)&&action==='idle'){lA={sx:-r*0.9,sy:bcy+r*0.28,ex:-r*1.46,ey:bcy+r*0.56};rA={sx:r*0.9,sy:bcy+r*0.28,ex:r*1.46,ey:bcy+r*0.56};}
   else{const sw=Math.sin(t*1.2)*r*0.04;lA.ey+=sw;rA.ey-=sw;}
-  const armW=r*0.36;
   [lA,rA].forEach(a=>{
-    drawDongliLimb(ctx,a.sx,a.sy,a.ex,a.ey,armW,col.body,ol,r*0.07);
-    ctx.save();ctx.fillStyle=col.body;ctx.strokeStyle=ol;ctx.lineWidth=r*0.07;
-    ctx.beginPath();ctx.arc(a.ex,a.ey,armW*0.48,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore();
+    drawTaperedLimb(ctx,a.sx,a.sy,r*0.24,a.ex,a.ey,r*0.15,col.body,ol,r*0.068);
+    // Cute chubby hand
+    const handR=r*0.22;
+    ctx.save();ctx.fillStyle=col.body;ctx.strokeStyle=ol;ctx.lineWidth=r*0.068;
+    ctx.beginPath();ctx.arc(a.ex,a.ey,handR,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.44)';
+    ctx.beginPath();ctx.ellipse(a.ex-handR*0.3,a.ey-handR*0.3,handR*0.42,handR*0.26,-0.5,0,Math.PI*2);ctx.fill();
+    ctx.restore();
   });
 
   // Umbrella for rain
@@ -2219,17 +2229,23 @@ function getDongliBounce(action,emotion,t,S){
 }
 
 function drawDongliLimb(ctx,x1,y1,x2,y2,w,fill,stroke,sw){
+  drawTaperedLimb(ctx,x1,y1,w/2,x2,y2,w/2,fill,stroke,sw);
+}
+function drawTaperedLimb(ctx,x1,y1,r1,x2,y2,r2,fill,stroke,sw){
   const ang=Math.atan2(y2-y1,x2-x1),perp=ang+Math.PI/2;
-  const cp=Math.cos(perp),sp=Math.sin(perp),hw=w/2;
+  const cp=Math.cos(perp),sp=Math.sin(perp);
   ctx.save();
   ctx.beginPath();
-  ctx.moveTo(x1+cp*hw,y1+sp*hw);ctx.lineTo(x2+cp*hw,y2+sp*hw);
-  ctx.arc(x2,y2,hw,perp,perp+Math.PI,false);
-  ctx.lineTo(x1-cp*hw,y1-sp*hw);
-  ctx.arc(x1,y1,hw,perp+Math.PI,perp,false);
+  ctx.moveTo(x1+cp*r1,y1+sp*r1);ctx.lineTo(x2+cp*r2,y2+sp*r2);
+  ctx.arc(x2,y2,r2,perp,perp+Math.PI,false);
+  ctx.lineTo(x1-cp*r1,y1-sp*r1);
+  ctx.arc(x1,y1,r1,perp+Math.PI,perp,false);
   ctx.closePath();
   ctx.fillStyle=fill;ctx.fill();
   ctx.strokeStyle=stroke;ctx.lineWidth=sw||2;ctx.stroke();
+  // Shoulder-end highlight for roundness
+  ctx.fillStyle='rgba(255,255,255,0.30)';
+  ctx.beginPath();ctx.ellipse(x1-cp*r1*0.25,y1-sp*r1*0.25,r1*0.38,r1*0.22,ang+Math.PI/4,0,Math.PI*2);ctx.fill();
   ctx.restore();
 }
 
