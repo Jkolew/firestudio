@@ -984,7 +984,7 @@ function drawSubtitle(ctx,W,H,text,localT,duration){
   if(line)lines.push(line);
   const lineH=28,pad=16;
   const totalH=lines.length*lineH+pad*2;
-  const boxY=H*.71-totalH;
+  const boxY=H*.88-totalH;
   const tw=Math.max(...lines.map(l=>ctx.measureText(l).width))+44;
   // Diary paper card
   ctx.save();ctx.globalAlpha=alpha*.92;
