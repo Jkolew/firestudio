@@ -1329,22 +1329,9 @@ function drawPuppyFace(ctx,cx,cy,r,emotion,action,t,expr,c){
 }
 
 // ═══════════════════════════════════════════════════════
-//  SOMI (소미) CHARACTER SYSTEM
+//  NEW FLUID SKELETON SYSTEM (SOMI)
+//  Moving away from rigid lines to soft, curved shapes.
 // ═══════════════════════════════════════════════════════
-const SOMI_C = {
-  skin: '#FFDDC1',
-  hair: '#A67C52', // light brown
-  hairHi: '#C49A6C',
-  eye: '#FFBF00', // sparkly amber
-  shirt: '#E0F2FF', // pastel blue
-  stripe: '#FFFFFF',
-  denim: '#4682B4', // denim blue
-  denimDark: '#36648B',
-  shoe: '#FF4D4D', // red sneakers
-  daisy: '#FFFFFF',
-  daisyCenter: '#FFD700',
-  outlines: 'rgba(50, 25, 10, 0.6)'
-};
 
 function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   const c = SOMI_C;
@@ -1354,181 +1341,225 @@ function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   ctx.translate(cx, cy);
   if (facing < 0) ctx.scale(-1, 1);
 
-  // 자연스러운 숨쉬기 및 상체 움직임
-  const breath = Math.sin(t * 2.2) * S * 0.025;
-  const sway = Math.sin(t * 1.5) * S * 0.02;
+  // 1. NEW SKELETON DATA (More natural proportions)
+  const breath = Math.sin(t * 2.5) * S * 0.03;
+  const sway = Math.sin(t * 1.8) * S * 0.04;
   const j = getJoints(action, emotion, t, S);
 
-  // Shadow
-  ctx.save(); ctx.globalAlpha = 0.1; ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.ellipse(0, 4, S * 0.85, S * 0.2, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  // Shadow (Soft & Blurred)
+  ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(0, 5, S * 0.9, S * 0.22, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 
-  // 1. 다리 (빨간 운동화 포함)
-  drawSomiLeg(ctx, j.hip, j.knL, j.ftL, S, c, ol);
-  drawSomiLeg(ctx, j.hip, j.knR, j.ftR, S, c, ol);
+  // 2. LOWER BODY (Integrated denim overalls)
+  // 엉덩이와 다리를 연결하는 부드러운 하체 베이스
+  drawSomiLowerBody(ctx, j.hip, j.knL, j.ftL, j.knR, j.ftR, S, c, ol);
 
-  // 2. 몸통 (어깨 라인이 살아있는 데님 오버롤)
-  const neckB = { x: j.neck.x + sway, y: j.neck.y + breath };
-  drawSomiTorso(ctx, neckB, j.hip, S, c, ol);
+  // 3. UPPER BODY (Soft Pear Shape Torso)
+  // 목에서 어깨, 허리로 이어지는 단일 곡선 몸통
+  const neckPos = { x: j.neck.x + sway, y: j.neck.y + breath };
+  drawSomiUpperBody(ctx, neckPos, j.hip, S, c, ol);
 
-  // 3. 팔 (줄무늬 소매)
-  drawSomiArm(ctx, neckB, j.elbL, j.hanL, S, c, ol, action);
-  drawSomiArm(ctx, neckB, j.elbR, j.hanR, S, c, ol, action);
+  // 4. CURVED ARMS (Organic movement)
+  // 관절이 꺾이지 않고 휘어지는 팔
+  drawSomiCurvedArm(ctx, neckPos, j.elbL, j.hanL, S, c, ol, -1, action);
+  drawSomiCurvedArm(ctx, neckPos, j.elbR, j.hanR, S, c, ol, 1, action);
 
-  // 4. 머리 (플러피 보브 & 데이지 핀)
-  const hx = j.head.x + sway, hy = j.head.y + breath;
+  // 5. HEAD (Natural tilt)
+  const hx = j.head.x + sway * 1.2, hy = j.head.y + breath;
   drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t);
 
   ctx.restore();
 }
 
-function drawSomiTorso(ctx, neck, hip, S, c, ol) {
+// ── 몸통을 하나의 부드러운 곡선 덩어리로 그림 ──
+function drawSomiUpperBody(ctx, neck, hip, S, c, ol) {
   const nx = neck.x, ny = neck.y, hx = hip.x, hy = hip.y;
-  const sw = S * 0.45; // 어깨 너비 (자연스러운 사람 비율)
-  const hw = S * 0.35; // 골반 너비
+  const sw = S * 0.52; // Shoulder Width
+  const ww = S * 0.45; // Waist Width
   
   ctx.save();
+  // 줄무늬 티셔츠 (Soft Silhouette)
+  ctx.fillStyle = c.shirt; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(nx - sw*0.5, ny + S*0.2); // Left Shoulder
+  ctx.bezierCurveTo(nx - sw*0.6, ny + S*0.6, hx - ww*0.6, hy - S*0.5, hx - ww*0.5, hy); // Left side
+  ctx.lineTo(hx + ww*0.5, hy); // Bottom
+  ctx.bezierCurveTo(hx + ww*0.6, hy - S*0.5, nx + sw*0.6, ny + S*0.6, nx + sw*0.5, ny + S*0.2); // Right side
+  ctx.quadraticCurveTo(nx, ny - S*0.05, nx - sw*0.5, ny + S*0.2); // Shoulder line
+  ctx.fill(); ctx.stroke();
   
-  // 1. 줄무늬 티셔츠 (어깨 포함)
+  // 티셔츠 줄무늬 (Clipping)
+  ctx.save(); ctx.clip();
+  ctx.strokeStyle = c.stripe; ctx.lineWidth = S * 0.07;
+  for(let i=0; i<12; i++) {
+    const ly = ny + i * S * 0.12;
+    ctx.beginPath(); ctx.moveTo(nx - S, ly); ctx.lineTo(nx + S, ly); ctx.stroke();
+  }
+  ctx.restore();
+
+  // 오버롤 상단 (Bib)
+  ctx.fillStyle = c.denim;
+  const bw = S * 0.35;
+  ctx.beginPath();
+  ctx.moveTo(hx - bw, hy - S*0.8);
+  ctx.lineTo(hx + bw, hy - S*0.8);
+  ctx.lineTo(hx + bw*1.1, hy);
+  ctx.lineTo(hx - bw*1.1, hy);
+  ctx.closePath(); ctx.fill(); ctx.stroke();
+  
+  // 멜빵 끈 (부드러운 곡선)
+  ctx.lineWidth = S * 0.1;
+  ctx.beginPath();
+  ctx.moveTo(nx - sw*0.3, ny + S*0.2); ctx.quadraticCurveTo(nx - sw*0.4, hy - S*0.5, hx - bw*0.8, hy - S*0.8);
+  ctx.moveTo(nx + sw*0.3, ny + S*0.2); ctx.quadraticCurveTo(nx + sw*0.4, hy - S*0.5, hx + bw*0.8, hy - S*0.8);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+// ── 하체를 엉덩이 덩어리로 통합하여 그림 ──
+function drawSomiLowerBody(ctx, hip, knL, ftL, knR, ftR, S, c, ol) {
+  const hw = S * 0.45; // Hip width
+  
+  // 1. Denim Pants (엉덩이 볼륨)
+  ctx.save();
+  ctx.fillStyle = c.denim; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.ellipse(hip.x, hip.y, hw, S * 0.4, 0, 0, Math.PI * 2);
+  ctx.fill(); ctx.stroke();
+  
+  // 2. Curved Legs (기존의 딱딱한 관절 대신 곡선 사용)
+  drawSomiCurvedLeg(ctx, {x: hip.x - hw*0.5, y: hip.y}, knL, ftL, S, c, ol);
+  drawSomiCurvedLeg(ctx, {x: hip.x + hw*0.5, y: hip.y}, knR, ftR, S, c, ol);
+  ctx.restore();
+}
+
+// ── 곡선형 다리 드로잉 ──
+function drawSomiCurvedLeg(ctx, start, knee, foot, S, c, ol) {
+  const lw = S * 0.28;
+  ctx.save();
+  ctx.fillStyle = c.denim; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
+  
+  // 2차 베지어 곡선으로 다리의 흐름 표현
+  ctx.beginPath();
+  ctx.moveTo(start.x - lw*0.5, start.y);
+  ctx.quadraticCurveTo(knee.x - lw*0.5, knee.y, foot.x - lw*0.4, foot.y); // Outer
+  ctx.lineTo(foot.x + lw*0.4, foot.y); // Bottom
+  ctx.quadraticCurveTo(knee.x + lw*0.5, knee.y, start.x + lw*0.5, start.y); // Inner
+  ctx.fill(); ctx.stroke();
+  
+  // 신발
+  drawSomiShoe(ctx, foot.x, foot.y, S, c, ol);
+  ctx.restore();
+}
+
+// ── 곡선형 팔 드로잉 ──
+function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action) {
+  const aw = S * 0.18;
+  const startX = neck.x + side * S * 0.25;
+  const startY = neck.y + S * 0.25;
+  
+  ctx.save();
+  // 1. 소매 (곡선)
   ctx.fillStyle = c.shirt; ctx.strokeStyle = ol; ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(nx - sw*0.5, ny + S*0.1); // 왼쪽 어깨
-  ctx.quadraticCurveTo(nx, ny - S*0.05, nx + sw*0.5, ny + S*0.1); // 어깨 라인
-  ctx.lineTo(hx + hw*0.5, hy);
-  ctx.lineTo(hx - hw*0.5, hy);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
+  ctx.moveTo(startX - aw*0.5, startY);
+  ctx.quadraticCurveTo(elbow.x - aw*0.5, elbow.y, hand.x - aw*0.4, hand.y);
+  ctx.lineTo(hand.x + aw*0.4, hand.y);
+  ctx.quadraticCurveTo(elbow.x + aw*0.5, elbow.y, startX + aw*0.5, startY);
+  ctx.fill(); ctx.stroke();
   
-  // 티셔츠 줄무늬
-  ctx.save(); ctx.clip();
-  ctx.strokeStyle = c.stripe; ctx.lineWidth = S * 0.06;
-  for(let i=0; i<10; i++) {
-    const ly = ny + i * S * 0.15;
-    ctx.beginPath(); ctx.moveTo(nx - sw, ly); ctx.lineTo(nx + sw, ly); ctx.stroke();
-  }
-  ctx.restore();
-
-  // 2. 데님 오버롤 (멜빵바지)
-  ctx.fillStyle = c.denim;
-  ctx.beginPath();
-  ctx.moveTo(hx - hw*0.6, hy - S*0.8);
-  ctx.lineTo(hx + hw*0.6, hy - S*0.8);
-  ctx.lineTo(hx + hw*0.7, hy + S*0.2);
-  ctx.lineTo(hx - hw*0.7, hy + S*0.2);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
+  // 2. 손 (동글동글하게)
+  ctx.fillStyle = c.skin;
+  ctx.beginPath(); ctx.arc(hand.x, hand.y, S*0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
   
-  // 멜빵 끈
-  ctx.lineWidth = S * 0.08;
-  ctx.beginPath();
-  ctx.moveTo(nx - sw*0.3, ny + S*0.1); ctx.lineTo(hx - hw*0.5, hy - S*0.8);
-  ctx.moveTo(nx + sw*0.3, ny + S*0.1); ctx.lineTo(hx + hw*0.5, hy - S*0.8);
-  ctx.stroke();
-  
-  // 주머니 및 디테일
-  ctx.strokeStyle = 'rgba(255,255,255,0.2)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(hx, hy - S*0.5, S*0.15, 0, Math.PI); ctx.stroke();
-
-  ctx.restore();
-}
-
-function drawSomiArm(ctx, neck, elbow, hand, S, c, ol, action) {
-  // 어깨 시작점 보정
-  const side = elbow.x < neck.x ? -1 : 1;
-  const shoulderX = neck.x + side * S * 0.22;
-  const shoulderY = neck.y + S * 0.15;
-  
-  drawFilledLimb(ctx, shoulderX, shoulderY, S*0.12, elbow.x, elbow.y, S*0.1, c.shirt, ol);
-  drawFilledLimb(ctx, elbow.x, elbow.y, S*0.1, hand.x, hand.y, S*0.08, c.skin, ol);
-  
-  // 손 & 연필/일기장 (오른손에 일기장)
-  ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(hand.x, hand.y, S*0.09, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  
-  if (side > 0 && action !== 'walk') { // 오른손에 일기장
-    ctx.save(); ctx.translate(hand.x, hand.y); ctx.rotate(-0.3);
-    ctx.fillStyle = '#FFF5E6'; ctx.strokeStyle = '#8B4513'; ctx.lineWidth = 1;
-    ctx.beginPath(); roundRect(ctx, -S*0.15, -S*0.25, S*0.3, S*0.4, 2); ctx.fill(); ctx.stroke();
-    // 연필
-    ctx.strokeStyle = '#FFD700'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(S*0.1, -S*0.1); ctx.lineTo(S*0.25, -S*0.3); ctx.stroke();
+  // 일기장과 연필 (오른손)
+  if (side > 0 && action !== 'walk') {
+    ctx.save(); ctx.translate(hand.x, hand.y); ctx.rotate(-0.2 + Math.sin(performance.now()*0.002)*0.1);
+    ctx.fillStyle = '#FFF9F0'; ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 1;
+    roundRect(ctx, -S*0.18, -S*0.28, S*0.36, S*0.48, 3); ctx.fill(); ctx.stroke();
+    // 연필 디테일
+    ctx.fillStyle = '#FFD700'; ctx.fillRect(S*0.1, -S*0.15, S*0.05, S*0.3);
     ctx.restore();
   }
+  ctx.restore();
 }
 
-function drawSomiLeg(ctx, hip, knee, foot, S, c, ol) {
-  drawFilledLimb(ctx, hip.x, hip.y, S*0.18, knee.x, knee.y, S*0.15, c.denim, ol);
-  drawFilledLimb(ctx, knee.x, knee.y, S*0.15, foot.x, foot.y, S*0.12, c.denim, ol);
-  
-  // 빨간 운동화
-  ctx.save(); ctx.translate(foot.x, foot.y);
-  ctx.fillStyle = c.shoe; ctx.beginPath(); ctx.ellipse(S*0.1, 0, S*0.22, S*0.12, 0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(S*0.1, S*0.05, S*0.2, S*0.04, 0, 0, Math.PI*2); ctx.fill();
+function drawSomiShoe(ctx, x, y, S, c, ol) {
+  ctx.save(); ctx.translate(x, y);
+  ctx.fillStyle = c.shoe; ctx.beginPath(); ctx.ellipse(S*0.08, 0, S*0.24, S*0.13, 0.08, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(S*0.08, S*0.06, S*0.2, S*0.05, 0, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
 function drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t) {
-  const r = S * 0.42;
+  const r = S * 0.45;
   ctx.save();
   
-  // 1. 머리카락 (플러피 보브)
-  ctx.fillStyle = c.hair; ctx.strokeStyle = ol; ctx.lineWidth = 1.5;
-  const sway = Math.sin(t * 1.5) * 2;
-  
-  // 뒷머리 (풍성하게)
-  ctx.beginPath(); ctx.ellipse(hx, hy + r*0.1, r*1.15, r*1.1, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  
-  // 얼굴 본체
-  const hg = ctx.createRadialGradient(hx - r*0.2, hy - r*0.2, 0, hx, hy, r);
-  hg.addColorStop(0, '#FFF5EE'); hg.addColorStop(1, c.skin);
-  ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  
-  // 2. 얼굴 (호박색 눈)
-  drawSomiFace(ctx, hx, hy, r, emotion, action, t, c);
-  
-  // 3. 앞머리 & 데이지 핀
-  ctx.fillStyle = c.hair;
+  // 뒷머리 (더 풍성하고 둥글게)
+  ctx.fillStyle = c.hair; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
   ctx.beginPath();
-  ctx.arc(hx, hy - r*0.5, r*1.0, Math.PI+0.4, -0.4);
-  ctx.quadraticCurveTo(hx + r*0.2, hy - r*0.1, hx - r*0.9, hy - r*0.4);
+  ctx.ellipse(hx, hy + r*0.15, r*1.2, r*1.15, Math.sin(t)*0.05, 0, Math.PI*2);
   ctx.fill(); ctx.stroke();
   
-  // 데이지 꽃핀
-  const px = hx - r*0.6, py = hy - r*0.7;
-  ctx.save(); ctx.translate(px, py); ctx.rotate(t);
+  // 얼굴 구체
+  const hg = ctx.createRadialGradient(hx - r*0.25, hy - r*0.25, 0, hx, hy, r);
+  hg.addColorStop(0, '#FFF9F5'); hg.addColorStop(1, c.skin);
+  ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  
+  // 얼굴 요소
+  drawSomiFace(ctx, hx, hy, r, emotion, action, t, c);
+  
+  // 앞머리 (부드러운 곡선 결)
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
+  ctx.arc(hx, hy - r*0.45, r*1.05, Math.PI+0.45, -0.45);
+  ctx.quadraticCurveTo(hx + r*0.2, hy - r*0.05, hx - r*0.95, hy - r*0.4);
+  ctx.fill(); ctx.stroke();
+  
+  // 데이지 꽃핀 (애니메이션 강화)
+  const px = hx - r*0.65, py = hy - r*0.75;
+  ctx.save(); ctx.translate(px, py); ctx.rotate(Math.sin(t*2)*0.2);
   ctx.fillStyle = c.daisy;
   for(let i=0; i<6; i++) {
     ctx.rotate(Math.PI/3);
-    ctx.beginPath(); ctx.ellipse(r*0.1, 0, r*0.1, r*0.05, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(r*0.12, 0, r*0.12, r*0.06, 0, 0, Math.PI*2); ctx.fill();
   }
-  ctx.fillStyle = c.daisyCenter; ctx.beginPath(); ctx.arc(0, 0, r*0.06, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = c.daisyCenter; ctx.beginPath(); ctx.arc(0, 0, r*0.07, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 
   ctx.restore();
 }
 
 function drawSomiFace(ctx, hx, hy, r, emotion, action, t, c) {
-  const eo = r*0.35, ey = hy - r*0.05, er = r*0.15;
+  const eo = r*0.38, ey = hy - r*0.02, er = r*0.16;
   
-  // 호박색 반짝이는 눈
+  // 눈 (더 크고 맑게)
   [hx-eo, hx+eo].forEach(ex => {
     ctx.save();
-    ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(ex, ey, er, er*1.1, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(ex, ey, er, er*1.15, 0, 0, Math.PI*2); ctx.fill();
     const ig = ctx.createRadialGradient(ex, ey, 0, ex, ey, er);
-    ig.addColorStop(0, '#FFD700'); ig.addColorStop(1, '#B8860B');
-    ctx.fillStyle = ig; ctx.beginPath(); ctx.ellipse(ex, ey+er*0.1, er*0.8, er*0.9, 0, 0, Math.PI*2); ctx.fill();
-    // 반짝임
+    ig.addColorStop(0, '#FFD700'); ig.addColorStop(0.6, '#B8860B'); ig.addColorStop(1, '#8B4513');
+    ctx.fillStyle = ig; ctx.beginPath(); ctx.ellipse(ex, ey+er*0.15, er*0.85, er*0.95, 0, 0, Math.PI*2); ctx.fill();
+    // 눈 하이라이트
     ctx.fillStyle = '#FFF';
-    ctx.beginPath(); ctx.arc(ex-er*0.3, ey-er*0.3, er*0.4, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.arc(ex+er*0.3, ey+er*0.2, er*0.15, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(ex-er*0.35, ey-er*0.35, er*0.45, 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.arc(ex+er*0.4, ey+er*0.3, er*0.2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   });
   
-  // 볼터치 (slight blush)
-  ctx.fillStyle = 'rgba(255, 182, 193, 0.4)';
-  ctx.beginPath(); ctx.arc(hx-eo-r*0.1, hy+r*0.25, r*0.2, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(hx+eo+r*0.1, hy+r*0.25, r*0.2, 0, Math.PI*2); ctx.fill();
+  // 홍조 (자연스러운 그라데이션)
+  const blushG = ctx.createRadialGradient(hx-eo-r*0.1, hy+r*0.3, 0, hx-eo-r*0.1, hy+r*0.3, r*0.25);
+  blushG.addColorStop(0, 'rgba(255, 150, 150, 0.4)'); blushG.addColorStop(1, 'transparent');
+  ctx.fillStyle = blushG; ctx.beginPath(); ctx.arc(hx-eo-r*0.1, hy+r*0.3, r*0.25, 0, Math.PI*2); ctx.fill();
+  const blushG2 = ctx.createRadialGradient(hx+eo+r*0.1, hy+r*0.3, 0, hx+eo+r*0.1, hy+r*0.3, r*0.25);
+  blushG2.addColorStop(0, 'rgba(255, 150, 150, 0.4)'); blushG2.addColorStop(1, 'transparent');
+  ctx.fillStyle = blushG2; ctx.beginPath(); ctx.arc(hx+eo+r*0.1, hy+r*0.3, r*0.25, 0, Math.PI*2); ctx.fill();
   
-  // 입 (미소)
-  ctx.strokeStyle = c.outlines; ctx.lineWidth = 2; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.arc(hx, hy + r*0.3, r*0.2, 0.2, Math.PI-0.2); ctx.stroke();
+  // 입 (작고 귀여운 곡선)
+  ctx.strokeStyle = c.outlines; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.arc(hx, hy + r*0.35, r*0.22, 0.15, Math.PI-0.15); ctx.stroke();
 }
+
 
 
