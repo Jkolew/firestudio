@@ -6,11 +6,16 @@ function rand(a,b){return Math.random()*(b-a)+a;}
 function randInt(a,b){return Math.floor(rand(a,b+1));}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
-// ═══ GEMINI API INTEGRATION (FOR INFINITE QUALITY) ═══
-const GEMINI_API_KEY = "YOUR_API_KEY_HERE"; // 여기에 API 키를 넣으면 작동합니다.
+// ═══ GEMINI AI INTERFACE (SECURE STRUCTURE) ═══
+// 보안을 위해 API 키를 직접 넣지 마세요. 
+// 실제 서비스 시에는 Firebase Functions와 같은 백엔드를 통하거나, 
+// 사용자로부터 직접 키를 입력받아 localStorage에 저장하는 방식이 안전합니다.
 
 async function analyzeWithGemini(text) {
-  if (GEMINI_API_KEY === "YOUR_API_KEY_HERE") return null; // 키가 없으면 키워드 모드로 작동
+  // 1. localStorage에서 키를 찾거나 백엔드 엔드포인트를 확인합니다.
+  const userApiKey = localStorage.getItem('GEMINI_API_KEY');
+  
+  if (!userApiKey) return null; // 키가 설정되지 않았다면 기존 키워드 모드로 작동
 
   const prompt = `
     Analyze the following diary sentence and return ONLY a JSON object.
@@ -22,16 +27,17 @@ async function analyzeWithGemini(text) {
   `;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await response.json();
+    if (data.error) throw new Error(data.error.message);
     const resultText = data.candidates[0].content.parts[0].text;
     return JSON.parse(resultText.substring(resultText.indexOf('{'), resultText.lastIndexOf('}') + 1));
   } catch (e) {
-    console.error("Gemini API Error, falling back to keywords:", e);
+    console.warn("Gemini AI 모드 비활성 (키가 없거나 오류):", e.message);
     return null;
   }
 }
