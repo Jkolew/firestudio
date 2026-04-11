@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  CHARACTER & PROPS DRAWING SYSTEM (SOMI & FRIENDS V2.1)
+//  UNIVERSAL DRAWING ENGINE (SOMI & FRIENDS V3 - INFINITE)
 // ═══════════════════════════════════════════════════════
 
 const CHAR_STYLES = [
@@ -8,7 +8,7 @@ const CHAR_STYLES = [
   { skin: '#FFDDC1', skinHi: '#FFF9F5', hair: '#D2B48C', eye: '#4FC3F7', shirt: '#C8E6C9', stripe: '#A5D6A7', denim: '#546E7A', acc: 'star', accCol: '#FFD93D', accCenter: '#FFF176' }
 ];
 
-// ── UTILITIES ──
+// ── UNIVERSAL UTILS ──
 function roundRect(ctx, x, y, w, h, r) {
   if (w < 2 * r) r = w / 2; if (h < 2 * r) r = h / 2;
   ctx.beginPath(); ctx.moveTo(x + r, y);
@@ -46,7 +46,7 @@ function drawCharacter(ctx,cx,cy,S,action,emotion,t,facing,_skin,_style,charIdx=
   drawWarmChiChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx);
 }
 
-// ── SOMI SYSTEM ──
+// ── SOMI CORE ──
 function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   const styleIdx = charIdx % CHAR_STYLES.length;
   const c = CHAR_STYLES[styleIdx];
@@ -119,8 +119,10 @@ function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action, style
   ctx.save(); ctx.fillStyle = c.shirt; ctx.strokeStyle = ol; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(startX - aw*0.5, startY); ctx.quadraticCurveTo(elbow.x - aw*0.6, elbow.y, hand.x - aw*0.4, hand.y); ctx.lineTo(hand.x + aw*0.4, hand.y); ctx.quadraticCurveTo(elbow.x + aw*0.6, elbow.y, startX + aw*0.5, startY); ctx.fill(); ctx.stroke();
   ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(hand.x, hand.y, S*0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  
   if (side > 0 && action !== 'walk' && styleIdx === 0) {
-    ctx.save(); ctx.translate(hand.x, hand.y); ctx.rotate(-0.2); ctx.fillStyle = '#FFF9F0'; ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 1;
+    ctx.save(); ctx.translate(hand.x, hand.y); ctx.rotate(-0.2);
+    ctx.fillStyle = '#FFF9F0'; ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 1;
     roundRect(ctx, -S*0.18, -S*0.28, S*0.36, S*0.48, 3); ctx.fill(); ctx.stroke();
     ctx.fillStyle = '#FFD700'; ctx.fillRect(S*0.1, -S*0.15, S*0.05, S*0.3); ctx.restore();
   }
@@ -130,8 +132,8 @@ function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action, style
 function drawSomiShoe(ctx, x, y, S, c, ol) {
   ctx.save(); ctx.translate(x, y);
   const shoeCol = (c.acc === 'daisy') ? '#FF4D4D' : (c.acc === 'heart') ? '#BA68C8' : '#455A64';
-  ctx.fillStyle = shoeCol; ctx.beginPath(); ctx.ellipse(S*0.08, 0, S*0.24, S*0.13, 0.08, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(S*0.08, S*0.06, S*0.2, S*0.05, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = shoeCol; ctx.beginPath(); ctx.ellipse(S*0.08, 0, S*0.24, S*0.13, 0.08, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(S*0.08, S*0.06, S*0.2, S*0.05, 0, 0, Math.PI * 2); ctx.fill();
   ctx.restore();
 }
 
@@ -167,51 +169,63 @@ function drawSomiFace(ctx, hx, hy, r, emotion, action, t, c) {
   ctx.beginPath(); ctx.arc(hx, hy + r*0.35, r*0.22, 0.15, Math.PI-0.15); ctx.stroke();
 }
 
+// ── UNIVERSAL ENVIRONMENT & PROPS ──
 function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t,location){
-  if(!props||!chars.length)return;
-  if(!chars.every(c=>c.arrived))return;
+  if(!chars.length)return; if(!chars.every(c=>c.arrived))return;
   const cx=chars[0].x;
 
-  // 1. LOCATION BACKGROUND (피시방 배경)
+  // 1. UNIVERSAL LOCATION BACKGROUNDS
+  ctx.save();
   if(location === 'pcroom') {
+    ctx.fillStyle = 'rgba(0, 0, 20, 0.4)'; ctx.fillRect(0, 0, W, GY);
+    for(let i=0; i<5; i++) { const lx = (i*W/4 + t*50) % W; ctx.shadowBlur = 15; ctx.shadowColor = 'cyan'; ctx.fillStyle = 'rgba(0, 255, 255, 0.1)'; ctx.fillRect(lx, 0, 2, GY); }
+  } else if(location === 'snow' || location === 'winter') {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; ctx.fillRect(0, 0, W, GY);
+    for(let i=0; i<20; i++) { 
+      const sx = (Math.sin(i*1.5 + t)*W + i*100) % W;
+      const sy = (t*100 + i*50) % GY;
+      ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(sx, sy, S*0.05, 0, Math.PI*2); ctx.fill();
+    }
+  } else if(location === 'cafe') {
+    ctx.fillStyle = 'rgba(100, 50, 0, 0.1)'; ctx.fillRect(0, 0, W, GY);
+  }
+  ctx.restore();
+
+  // 2. UNIVERSAL PROP SYSTEM
+  for(const prop of props){
     ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 20, 0.4)';
-    ctx.fillRect(0, 0, W, GY);
-    // 게이밍 LED 효과
-    for(let i=0; i<5; i++) {
-      const lx = (i*W/4 + t*50) % W;
-      ctx.shadowBlur = 15; ctx.shadowColor = 'cyan';
-      ctx.fillStyle = 'rgba(0, 255, 255, 0.1)';
-      ctx.fillRect(lx, 0, 2, GY);
+    if(prop==='phone'){
+      const px=cx+S*.9,py=GY-S; ctx.fillStyle='#0A0A20'; ctx.strokeStyle='rgba(50, 25, 10, 0.6)'; ctx.lineWidth=2;
+      roundRect(ctx,px-S*.2,py-S*.4,S*.4,S*.7,S*.07).fill(); ctx.stroke();
+      ctx.fillStyle='#4488FF'; ctx.globalAlpha=.4+Math.sin(t*3)*.2; roundRect(ctx,px-S*.14,py-S*.3,S*.28,S*.45,S*.04).fill();
+    }
+    else if(prop==='game' || prop==='computer'){
+      const px=cx+S*.35,py=GY-S*2.3; ctx.fillStyle='#06060F'; ctx.strokeStyle='rgba(50, 25, 10, 0.6)'; ctx.lineWidth=2;
+      roundRect(ctx,px-S*.9,py-S*.72,S*1.8,S*1.28,S*.08).fill(); ctx.stroke();
+      ctx.fillStyle='#001E78'; ctx.globalAlpha=.8; roundRect(ctx,px-S*.75,py-S*.58,S*1.5,S*1.0,S*.05).fill();
+    }
+    else if(prop==='snowball' || prop==='ball'){
+      const bx=cx+S*1.5,by=GY-S*0.5; ctx.fillStyle='white'; ctx.strokeStyle='rgba(0,0,0,0.1)';
+      ctx.beginPath(); ctx.arc(bx, by, S*0.2, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    }
+    else if(prop==='coffee' || prop==='drink'){
+      const cx2=cx+S*1.2,cy2=GY-S*0.8; ctx.fillStyle='#FFF'; ctx.beginPath();
+      ctx.moveTo(cx2-S*.15, cy2); ctx.lineTo(cx2+S*.15, cy2); ctx.lineTo(cx2+S*.1, cy2+S*.3); ctx.lineTo(cx2-S*.1, cy2+S*.3); ctx.fill();
     }
     ctx.restore();
   }
-
-  for(const prop of props){
-    if(prop==='phone'){
-      const px=cx+S*.9,py=GY-S; ctx.save(); ctx.fillStyle='#0A0A20'; ctx.strokeStyle='rgba(50, 25, 10, 0.6)'; ctx.lineWidth=2;
-      roundRect(ctx,px-S*.2,py-S*.4,S*.4,S*.7,S*.07).fill(); ctx.stroke();
-      ctx.fillStyle='#4488FF'; ctx.globalAlpha=.4+Math.sin(t*3)*.2; roundRect(ctx,px-S*.14,py-S*.3,S*.28,S*.45,S*.04).fill(); ctx.restore();
-    }
-    if(prop==='game'||prop==='computer'){
-      const px=cx+S*.35,py=GY-S*2.3; ctx.save(); ctx.fillStyle='#06060F'; ctx.strokeStyle='rgba(50, 25, 10, 0.6)'; ctx.lineWidth=2;
-      roundRect(ctx,px-S*.9,py-S*.72,S*1.8,S*1.28,S*.08).fill(); ctx.stroke();
-      // 게이밍 화면
-      ctx.fillStyle='#001E78'; ctx.globalAlpha=.8; roundRect(ctx,px-S*.75,py-S*.58,S*1.5,S*1.0,S*.05).fill();
-      ctx.strokeStyle='#00FFFF'; ctx.globalAlpha=.3; for(let i=0;i<5;i++){ ctx.beginPath();ctx.moveTo(px-S*.75,py-S*.58+i*S*.2);ctx.lineTo(px+S*.75,py-S*.58+i*S*.2);ctx.stroke(); }
-      // 키보드 LED
-      ctx.fillStyle='#FF00FF'; ctx.globalAlpha=0.6; ctx.fillRect(px-S*.6, py+S*.75, S*1.2, S*.05);
-      ctx.restore();
-    }
-  }
 }
-
 
 function getJoints(action,emotion,t,S){
   const b={ head:{x:0,y:-S*2.9},neck:{x:0,y:-S*2.3},elbL:{x:-S*.9,y:-S*1.7},elbR:{x:S*.9,y:-S*1.7},hanL:{x:-S*.9,y:-S*.9},hanR:{x:S*.9,y:-S*.9},hip:{x:0,y:0},knL:{x:-S*.3,y:S*.9},knR:{x:S*.3,y:S*.9},ftL:{x:-S*.5,y:S*1.9},ftR:{x:S*.5,y:S*1.9} };
+  
   if(action==='walk'||action==='run'){
     const spd=action==='run'?5:3.2,sw=Math.sin(t*spd)*S*(action==='run'?.65:.52);
     return {head:{x:0,y:b.head.y+Math.sin(t*spd*2)*S*.04},neck:b.neck,elbL:{x:-S*.7,y:-S*1.7-sw*.25},elbR:{x:S*.7,y:-S*1.7+sw*.25},hanL:{x:-S*.65,y:-S*.8-sw*.4},hanR:{x:S*.65,y:-S*.8+sw*.4},hip:b.hip,knL:{x:-S*.3+sw*.3,y:S*.9-clamp(sw,0,S)*.5},knR:{x:S*.3-sw*.3,y:S*.9+clamp(sw,0,S)*.5},ftL:{x:-S*.5+sw*.52,y:S*1.88},ftR:{x:S*.5-sw*.52,y:S*1.88}};
+  }
+  if(action==='throw'||action==='snowball'){ // 던지는 동작 (눈싸움 등)
+    const sw=Math.sin(t*8)*S*0.5;
+    return {head:{x:S*.1,y:b.head.y},neck:b.neck,elbL:{x:-S,y:-S*2},elbR:{x:S+sw,y:-S*2.5+sw},hanL:{x:-S*1.2,y:-S*1.5},hanR:{x:S*1.5+sw,y:-S*2.8},hip:b.hip,knL:b.knL,knR:b.knR,ftL:b.ftL,ftR:b.ftR};
   }
   if(action==='game'||action==='work'||action==='write'){
     const jig=Math.sin(t*10)*S*.02;
