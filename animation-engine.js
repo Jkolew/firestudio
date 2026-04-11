@@ -6,6 +6,36 @@ function rand(a,b){return Math.random()*(b-a)+a;}
 function randInt(a,b){return Math.floor(rand(a,b+1));}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
+// ═══ GEMINI API INTEGRATION (FOR INFINITE QUALITY) ═══
+const GEMINI_API_KEY = "YOUR_API_KEY_HERE"; // 여기에 API 키를 넣으면 작동합니다.
+
+async function analyzeWithGemini(text) {
+  if (GEMINI_API_KEY === "YOUR_API_KEY_HERE") return null; // 키가 없으면 키워드 모드로 작동
+
+  const prompt = `
+    Analyze the following diary sentence and return ONLY a JSON object.
+    Sentence: "${text}"
+    Available Actions: throw, hug, kiss, cry, laugh, eat, drink, game, sleep, walk, run, work, talk, wave, sit, cook, shop, dance, swim, climb, jump, idle.
+    Available Locations: snow, pcroom, cafe, home, outside, sea, mountain, school, store, office.
+    Available Props: snowball, ball, phone, game, book, coffee, food, bag, money, music, umbrella.
+    Return Format: {"action": "...", "location": "...", "props": ["...", "..."], "emotion": "..."}
+  `;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    const data = await response.json();
+    const resultText = data.candidates[0].content.parts[0].text;
+    return JSON.parse(resultText.substring(resultText.indexOf('{'), resultText.lastIndexOf('}') + 1));
+  } catch (e) {
+    console.error("Gemini API Error, falling back to keywords:", e);
+    return null;
+  }
+}
+
 // ═══ EMOTION DETECTION ═══
 const EMOTIONS={
   night:  {words:['밤','별','달','새벽','밤하늘','야밤','별빛'],label:'밤하늘',color:'#9B8FE8'},
@@ -125,18 +155,32 @@ const PALETTES={
   anime:  {char1:'#FFD0BC',char2:'#FFB898',char3:'#EC9872',accent:'#FF8FAD',outline:'rgba(68,36,16,0.58)',paper:'#FFFBF0',ground:'#EED8C2',groundLine:'rgba(162,128,98,0.40)'},
 };
 
-function startSceneSequence(canvas,text,artStyle,dateStr){
+async function startSceneSequence(canvas,text,artStyle,dateStr){
   const ctx=canvas.getContext('2d');
   const W=canvas.width, H=canvas.height;
   const GY=H*0.75, S=H*0.08;
   const sentences=parseSentences(text);
   const charCounts=buildCumulativeCharCounts(sentences);
-  const emotion=detectEmotion(text);
-
-  const scenes=sentences.map((s,i)=>({
-    text:s, emotion, action:detectAction(s),
-    location:detectLocation(s), props:detectProps(s),
-    charCount:charCounts[i]
+  
+  // 1. AI 분석 또는 키워드 분석 (Hybrid)
+  const scenes = await Promise.all(sentences.map(async (s, i) => {
+    const aiResult = await analyzeWithGemini(s);
+    if (aiResult) {
+      return { 
+        text: s, 
+        emotion: aiResult.emotion || detectEmotion(text), 
+        action: aiResult.action || 'idle',
+        location: aiResult.location || null,
+        props: aiResult.props || [],
+        charCount: charCounts[i]
+      };
+    }
+    // Fallback to keywords
+    return {
+      text:s, emotion: detectEmotion(text), action:detectAction(s),
+      location:detectLocation(s), props:detectProps(s),
+      charCount:charCounts[i]
+    };
   }));
 
   let sceneIdx=0, startTime=performance.now();
