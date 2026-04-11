@@ -1,21 +1,22 @@
 // ═══════════════════════════════════════════════════════
-//  CHARACTER & PROPS DRAWING SYSTEM (SOMI & FRIENDS)
+//  CHARACTER & PROPS DRAWING SYSTEM (SOMI & FRIENDS V2)
+//  Focused on Natural Human Proportions and Fluid Motion
 // ═══════════════════════════════════════════════════════
 
 // ── CHARACTER STYLES ──
 const CHAR_STYLES = [
-  { // 0: 소미 (Somi) - 주인공
-    skin: '#FFDDC1', hair: '#A67C52', eye: '#FFBF00', 
+  { // 0: 소미 (Somi)
+    skin: '#FFDDC1', skinHi: '#FFF5EE', hair: '#A67C52', eye: '#FFBF00', 
     shirt: '#E0F2FF', stripe: '#FFFFFF', denim: '#4682B4', 
     acc: 'daisy', accCol: '#FFFFFF', accCenter: '#FFD700'
   },
-  { // 1: 하나 (Hana) - 친구 1
-    skin: '#FFE4C4', hair: '#2D1A0D', eye: '#5D4037', 
+  { // 1: 하나 (Hana)
+    skin: '#FFE4C4', skinHi: '#FFF9F0', hair: '#2D1A0D', eye: '#5D4037', 
     shirt: '#FFF9C4', stripe: '#FFD54F', denim: '#64B5F6', 
     acc: 'heart', accCol: '#FF8FAB', accCenter: '#FFB3C6'
   },
-  { // 2: 유리 (Yuri) - 친구 2
-    skin: '#FFDDC1', hair: '#D2B48C', eye: '#4FC3F7', 
+  { // 2: 유리 (Yuri)
+    skin: '#FFDDC1', skinHi: '#FFF9F5', hair: '#D2B48C', eye: '#4FC3F7', 
     shirt: '#C8E6C9', stripe: '#A5D6A7', denim: '#546E7A', 
     acc: 'star', accCol: '#FFD93D', accCenter: '#FFF176'
   }
@@ -73,7 +74,7 @@ function drawCharacter(ctx,cx,cy,S,action,emotion,t,facing,_skin,_style,charIdx=
   drawWarmChiChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx);
 }
 
-// ── FLUID SKELETON SYSTEM ──
+// ── NATURAL SKELETON SYSTEM (SOMI & FRIENDS) ──
 function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   const styleIdx = charIdx % CHAR_STYLES.length;
   const c = CHAR_STYLES[styleIdx];
@@ -83,6 +84,7 @@ function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   ctx.translate(cx, cy);
   if (facing < 0) ctx.scale(-1, 1);
 
+  // 1. PHYSICAL DYNAMICS
   const breath = Math.sin(t * 2.5 + charIdx) * S * 0.03;
   const sway = Math.sin(t * 1.8 + charIdx) * S * 0.04;
   const j = getJoints(action, emotion, t, S);
@@ -91,28 +93,50 @@ function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
   ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = '#000';
   ctx.beginPath(); ctx.ellipse(0, 5, S * 0.9, S * 0.22, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 
+  // 2. LOWER BODY (Hips & Legs)
   drawSomiLowerBody(ctx, j.hip, j.knL, j.ftL, j.knR, j.ftR, S, c, ol);
+
+  // 3. TORSO & NECK (Natural Connection)
   const neckPos = { x: j.neck.x + sway, y: j.neck.y + breath };
-  drawSomiUpperBody(ctx, neckPos, j.hip, S, c, ol, styleIdx);
+  drawSomiTorsoAndNeck(ctx, neckPos, j.hip, S, c, ol, styleIdx);
+
+  // 4. ARMS (Curved)
   drawSomiCurvedArm(ctx, neckPos, j.elbL, j.hanL, S, c, ol, -1, action, styleIdx);
   drawSomiCurvedArm(ctx, neckPos, j.elbR, j.hanR, S, c, ol, 1, action, styleIdx);
-  const hx = j.head.x + sway * 1.2, hy = j.head.y + breath;
-  drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t, styleIdx);
+
+  // 5. HEAD (Positioned on Neck)
+  const headPos = { x: j.head.x + sway * 1.2, y: j.head.y + breath };
+  drawSomiHead(ctx, headPos.x, headPos.y, S, c, ol, emotion, action, t, styleIdx);
 
   ctx.restore();
 }
 
-function drawSomiUpperBody(ctx, neck, hip, S, c, ol, styleIdx) {
+function drawSomiTorsoAndNeck(ctx, neck, hip, S, c, ol, styleIdx) {
   const nx = neck.x, ny = neck.y, hx = hip.x, hy = hip.y;
-  const sw = S * 0.52, ww = S * 0.45;
+  const sw = S * 0.55; // Shoulder width
+  const ww = S * 0.48; // Waist width
+  
   ctx.save();
-  ctx.fillStyle = c.shirt; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
+  
+  // ── 1. NECK (실제 목 드로잉) ──
+  ctx.fillStyle = c.skin; ctx.strokeStyle = ol; ctx.lineWidth = 1.2;
+  const nw = S * 0.18; // Neck width
   ctx.beginPath();
-  ctx.moveTo(nx - sw*0.5, ny + S*0.2);
-  ctx.bezierCurveTo(nx - sw*0.6, ny + S*0.6, hx - ww*0.6, hy - S*0.5, hx - ww*0.5, hy);
+  ctx.moveTo(nx - nw*0.5, ny - S*0.1);
+  ctx.lineTo(nx - nw*0.5, ny + S*0.2);
+  ctx.lineTo(nx + nw*0.5, ny + S*0.2);
+  ctx.lineTo(nx + nw*0.5, ny - S*0.1);
+  ctx.fill(); ctx.stroke();
+
+  // ── 2. TORSO (승모근 라인이 있는 상체) ──
+  ctx.fillStyle = c.shirt; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(nx - nw*0.5, ny + S*0.1); // Neck base left
+  ctx.quadraticCurveTo(nx - sw*0.4, ny + S*0.1, nx - sw*0.5, ny + S*0.3); // Trap to Shoulder
+  ctx.bezierCurveTo(nx - sw*0.65, ny + S*0.7, hx - ww*0.65, hy - S*0.5, hx - ww*0.5, hy); // Side
   ctx.lineTo(hx + ww*0.5, hy);
-  ctx.bezierCurveTo(hx + ww*0.6, hy - S*0.5, nx + sw*0.6, ny + S*0.6, nx + sw*0.5, ny + S*0.2);
-  ctx.quadraticCurveTo(nx, ny - S*0.05, nx - sw*0.5, ny + S*0.2);
+  ctx.bezierCurveTo(hx + ww*0.65, hy - S*0.5, nx + sw*0.65, ny + S*0.7, nx + sw*0.5, ny + S*0.3); // Side
+  ctx.quadraticCurveTo(nx + sw*0.4, ny + S*0.1, nx + nw*0.5, ny + S*0.1); // Shoulder to Trap
   ctx.fill(); ctx.stroke();
   
   // Pattern variety
@@ -133,55 +157,58 @@ function drawSomiUpperBody(ctx, neck, hip, S, c, ol, styleIdx) {
 
   // Denim bib
   ctx.fillStyle = c.denim;
-  const bw = S * 0.35;
+  const bw = S * 0.38;
   ctx.beginPath();
-  ctx.moveTo(hx - bw, hy - S*0.8); ctx.lineTo(hx + bw, hy - S*0.8);
+  ctx.moveTo(hx - bw, hy - S*0.85); ctx.lineTo(hx + bw, hy - S*0.85);
   ctx.lineTo(hx + bw*1.1, hy); ctx.lineTo(hx - bw*1.1, hy);
   ctx.closePath(); ctx.fill(); ctx.stroke();
   
+  // 멜빵 끈 (어깨 곡선에 밀착)
   ctx.lineWidth = S * 0.1;
   ctx.beginPath();
-  ctx.moveTo(nx - sw*0.3, ny + S*0.2); ctx.quadraticCurveTo(nx - sw*0.4, hy - S*0.5, hx - bw*0.8, hy - S*0.8);
-  ctx.moveTo(nx + sw*0.3, ny + S*0.2); ctx.quadraticCurveTo(nx + sw*0.4, hy - S*0.5, hx + bw*0.8, hy - S*0.8);
+  ctx.moveTo(nx - sw*0.35, ny + S*0.25); ctx.quadraticCurveTo(nx - sw*0.45, hy - S*0.5, hx - bw*0.8, hy - S*0.85);
+  ctx.moveTo(nx + sw*0.35, ny + S*0.25); ctx.quadraticCurveTo(nx + sw*0.45, hy - S*0.5, hx + bw*0.8, hy - S*0.85);
   ctx.stroke();
+  
   ctx.restore();
 }
 
 function drawSomiLowerBody(ctx, hip, knL, ftL, knR, ftR, S, c, ol) {
-  const hw = S * 0.45;
+  const hw = S * 0.48;
   ctx.save();
   ctx.fillStyle = c.denim; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
-  ctx.beginPath(); ctx.ellipse(hip.x, hip.y, hw, S * 0.4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(hip.x, hip.y, hw, S * 0.42, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
   drawSomiCurvedLeg(ctx, {x: hip.x - hw*0.5, y: hip.y}, knL, ftL, S, c, ol);
   drawSomiCurvedLeg(ctx, {x: hip.x + hw*0.5, y: hip.y}, knR, ftR, S, c, ol);
   ctx.restore();
 }
 
 function drawSomiCurvedLeg(ctx, start, knee, foot, S, c, ol) {
-  const lw = S * 0.28;
+  const lw = S * 0.3;
   ctx.save();
   ctx.fillStyle = c.denim; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
   ctx.beginPath();
   ctx.moveTo(start.x - lw*0.5, start.y);
-  ctx.quadraticCurveTo(knee.x - lw*0.5, knee.y, foot.x - lw*0.4, foot.y);
+  ctx.quadraticCurveTo(knee.x - lw*0.6, knee.y, foot.x - lw*0.4, foot.y);
   ctx.lineTo(foot.x + lw*0.4, foot.y);
-  ctx.quadraticCurveTo(knee.x + lw*0.5, knee.y, start.x + lw*0.5, start.y);
+  ctx.quadraticCurveTo(knee.x + lw*0.6, knee.y, start.x + lw*0.5, start.y);
   ctx.fill(); ctx.stroke();
   drawSomiShoe(ctx, foot.x, foot.y, S, c, ol);
   ctx.restore();
 }
 
 function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action, styleIdx) {
-  const aw = S * 0.18;
-  const startX = neck.x + side * S * 0.25;
-  const startY = neck.y + S * 0.25;
+  const aw = S * 0.2;
+  const startX = neck.x + side * S * 0.3;
+  const startY = neck.y + S * 0.3;
   ctx.save();
   ctx.fillStyle = c.shirt; ctx.strokeStyle = ol; ctx.lineWidth = 1.5;
   ctx.beginPath();
   ctx.moveTo(startX - aw*0.5, startY);
-  ctx.quadraticCurveTo(elbow.x - aw*0.5, elbow.y, hand.x - aw*0.4, hand.y);
+  ctx.quadraticCurveTo(elbow.x - aw*0.6, elbow.y, hand.x - aw*0.4, hand.y);
   ctx.lineTo(hand.x + aw*0.4, hand.y);
-  ctx.quadraticCurveTo(elbow.x + aw*0.5, elbow.y, startX + aw*0.5, startY);
+  ctx.quadraticCurveTo(elbow.x + aw*0.6, elbow.y, startX + aw*0.5, startY);
   ctx.fill(); ctx.stroke();
   
   ctx.fillStyle = c.skin;
@@ -220,7 +247,7 @@ function drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t, styleIdx) {
   }
   
   const hg = ctx.createRadialGradient(hx - r*0.25, hy - r*0.25, 0, hx, hy, r);
-  hg.addColorStop(0, '#FFF9F5'); hg.addColorStop(1, c.skin);
+  hg.addColorStop(0, c.skinHi); hg.addColorStop(1, c.skin);
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
   
   drawSomiFace(ctx, hx, hy, r, emotion, action, t, c);
