@@ -38,46 +38,281 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;}
 
-#share-canvas{position:fixed;inset:0;width:100%;height:100%;}
+/* ── LANDING SCREEN ── */
+#landing{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:0;
+  background:var(--bg);
+  transition:opacity .6s ease, transform .6s ease;
+  z-index:20;
+}
+#landing.hide{opacity:0;pointer-events:none;transform:translateY(-24px);}
 
-.player-top{position:fixed;top:0;left:0;right:0;z-index:10;padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
-.player-meta{display:flex;align-items:center;gap:10px;}
+.landing-logo{
+  font-family:'Noto Serif KR',serif;font-size:15px;font-weight:300;
+  color:var(--muted);letter-spacing:2px;
+  margin-bottom:40px;
+}
+
+/* 곰돌이 침대 */
+.bear-wrap{position:relative;width:180px;height:130px;margin-bottom:36px;}
+.bed{
+  width:180px;height:100px;
+  background:#1E1E2E;
+  border-radius:24px 24px 12px 12px;
+  position:absolute;bottom:0;
+  border:1.5px solid rgba(255,255,255,0.07);
+  box-shadow:0 12px 40px rgba(0,0,0,0.6);
+}
+.pillow{
+  width:52px;height:32px;
+  background:#2E2E48;
+  border-radius:10px;
+  position:absolute;top:12px;left:12px;
+}
+.blanket{
+  width:110px;height:72px;
+  background:linear-gradient(135deg,var(--accent),#A68B6A);
+  border-radius:12px 0 12px 0;
+  position:absolute;bottom:0;right:0;z-index:2;
+  border-top:1.5px solid rgba(255,255,255,0.12);
+}
+.bear{
+  position:absolute;top:8px;left:52px;z-index:3;
+  animation:sleep-wiggle 4s ease-in-out infinite;
+}
+.bear-head{
+  width:56px;height:46px;
+  background:#7A5C44;
+  border-radius:50%;position:relative;
+}
+.bear-ear-l,.bear-ear-r{
+  width:18px;height:18px;
+  background:#7A5C44;
+  border-radius:50%;position:absolute;top:-6px;
+}
+.bear-ear-l{left:1px;} .bear-ear-r{right:1px;}
+.bear-ear-l::after,.bear-ear-r::after{
+  content:'';display:block;
+  width:10px;height:10px;
+  background:#5A3E2B;
+  border-radius:50%;
+  position:absolute;top:4px;left:50%;transform:translateX(-50%);
+}
+.bear-eye-l,.bear-eye-r{
+  width:5px;height:3px;
+  background:rgba(0,0,0,0.5);
+  position:absolute;top:22px;border-radius:3px;
+}
+.bear-eye-l{left:14px;} .bear-eye-r{right:14px;}
+.bear-nose{
+  width:10px;height:6px;
+  background:#4A3425;
+  border-radius:50%;
+  position:absolute;top:29px;left:50%;transform:translateX(-50%);
+}
+.bear-cheek-l,.bear-cheek-r{
+  width:10px;height:6px;
+  background:rgba(255,160,130,0.35);
+  border-radius:50%;
+  position:absolute;top:30px;
+}
+.bear-cheek-l{left:6px;} .bear-cheek-r{right:6px;}
+
+.zzz{
+  position:absolute;top:-22px;right:-12px;
+  color:var(--accent);font-size:13px;font-weight:600;
+  opacity:0;animation:zzz-fly 3s linear infinite;
+}
+.zzz:nth-child(2){animation-delay:1s;right:-4px;}
+.zzz:nth-child(3){animation-delay:2s;right:4px;}
+
+@keyframes sleep-wiggle{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.04) translateY(-2px);}
+}
+@keyframes zzz-fly{
+  0%{transform:translate(0,0);opacity:0;}
+  20%{opacity:0.85;}
+  100%{transform:translate(22px,-44px);opacity:0;}
+}
+
+/* 공유 정보 */
+.share-info{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  margin-bottom:40px;
+}
+.share-date{
+  font-family:'Noto Serif KR',serif;font-size:20px;font-weight:400;
+  color:var(--text);
+}
+.share-emotion-badge{
+  font-size:12px;padding:4px 14px;border-radius:100px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:var(--muted);
+}
+.share-label{
+  font-size:13px;color:var(--muted);letter-spacing:.5px;margin-top:4px;
+}
+
+/* 버튼 */
+.btn-row{display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:280px;}
+.btn-play{
+  width:100%;
+  background:var(--accent);color:#08080F;
+  border:none;padding:15px 0;border-radius:100px;
+  font-size:15px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:opacity .2s;
+  letter-spacing:.2px;
+}
+.btn-play:hover{opacity:.88;}
+.btn-write{
+  width:100%;
+  background:none;
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.55);
+  padding:13px 0;border-radius:100px;
+  font-size:14px;font-family:inherit;
+  cursor:pointer;transition:all .2s;
+}
+.btn-write:hover{border-color:rgba(255,255,255,.28);color:rgba(255,255,255,.8);}
+
+/* ── PLAYER SCREEN ── */
+#player{
+  position:fixed;inset:0;
+  opacity:0;pointer-events:none;
+  transition:opacity .6s ease;
+  z-index:10;
+}
+#player.show{opacity:1;pointer-events:all;}
+
+#share-canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+.player-top{
+  position:absolute;top:0;left:0;right:0;z-index:10;
+  padding:20px 24px 0;
+  display:flex;align-items:center;justify-content:space-between;
+}
 .player-date{font-family:'Noto Serif KR',serif;font-size:14px;color:rgba(255,255,255,.55);}
-.player-emotion-badge{font-size:11px;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);}
-.share-badge{background:rgba(196,168,130,.15);border:1px solid rgba(196,168,130,.3);color:var(--accent);padding:5px 12px;border-radius:100px;font-size:11px;}
-
-.diary-overlay{position:fixed;bottom:0;left:0;right:0;z-index:10;padding:0 32px 28px;background:linear-gradient(transparent,rgba(0,0,0,.88) 35%);}
+.player-emotion-badge{
+  font-size:11px;padding:3px 10px;border-radius:100px;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.7);
+}
+.share-badge-small{
+  background:rgba(196,168,130,.15);border:1px solid rgba(196,168,130,.3);
+  color:var(--accent);padding:5px 12px;border-radius:100px;font-size:11px;
+}
+.diary-overlay{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  padding:0 32px 28px;
+  background:linear-gradient(transparent,rgba(0,0,0,.88) 35%);
+}
 .player-action-row{display:flex;gap:10px;margin-top:14px;}
-.btn-share{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:9px 20px;border-radius:100px;font-size:13px;font-family:inherit;cursor:pointer;backdrop-filter:blur(10px);transition:all .2s;}
-.btn-share:hover{background:rgba(255,255,255,.2);}
+.btn-share-pill{
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  color:rgba(255,255,255,.85);padding:9px 20px;border-radius:100px;
+  font-size:13px;font-family:inherit;cursor:pointer;
+  backdrop-filter:blur(10px);transition:all .2s;
+}
+.btn-share-pill:hover{background:rgba(255,255,255,.2);}
 
-.error-screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--muted);font-family:'Noto Serif KR',serif;}
+/* ── ERROR ── */
+.error-screen{
+  position:fixed;inset:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;color:var(--muted);font-family:'Noto Serif KR',serif;
+}
 .error-screen h2{font-size:20px;font-weight:400;color:var(--text);}
 .error-screen p{font-size:14px;}
-.btn-home{margin-top:8px;background:var(--accent);color:#08080F;border:none;padding:12px 28px;border-radius:100px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;}
+.btn-home{
+  margin-top:8px;background:var(--accent);color:#08080F;
+  border:none;padding:12px 28px;border-radius:100px;
+  font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;
+}
 </style>
 </head>
 <body>
 
-<canvas id="share-canvas"></canvas>
+<!-- 랜딩 화면 -->
+<div id="landing">
+  <div class="landing-logo">하루</div>
 
-<div class="player-top">
-  <div class="player-meta">
-    <div class="player-date" id="share-player-date"></div>
-    <div class="player-emotion-badge" id="share-player-emotion-badge"></div>
+  <div class="bear-wrap">
+    <div class="bed">
+      <div class="pillow"></div>
+      <div class="blanket"></div>
+    </div>
+    <div class="bear">
+      <div class="bear-head">
+        <div class="bear-ear-l"></div>
+        <div class="bear-ear-r"></div>
+        <div class="bear-eye-l"></div>
+        <div class="bear-eye-r"></div>
+        <div class="bear-nose"></div>
+        <div class="bear-cheek-l"></div>
+        <div class="bear-cheek-r"></div>
+      </div>
+      <div class="zzz">z</div>
+      <div class="zzz">z</div>
+      <div class="zzz">z</div>
+    </div>
   </div>
-  <div class="share-badge">공유된 하루</div>
+
+  <div class="share-info">
+    <div class="share-date" id="landing-date"></div>
+    <div class="share-emotion-badge" id="landing-badge"></div>
+    <div class="share-label">의 하루 일기</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-play" onclick="playDiary()">✦ 일기 애니메이션 보기</button>
+    <button class="btn-write" onclick="window.location.href='index.html'">나도 써보기</button>
+  </div>
 </div>
 
-<div class="diary-overlay">
-  <div class="player-action-row">
-    <button class="btn-share" onclick="window.location.href='index.html'">나도 써보기</button>
+<!-- 플레이어 화면 -->
+<div id="player">
+  <canvas id="share-canvas"></canvas>
+  <div class="player-top">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="player-date" id="share-player-date"></div>
+      <div class="player-emotion-badge" id="share-player-emotion-badge"></div>
+    </div>
+    <div class="share-badge-small">공유된 하루</div>
+  </div>
+  <div class="diary-overlay">
+    <div class="player-action-row">
+      <button class="btn-share-pill" onclick="window.location.href='index.html'">나도 써보기</button>
+    </div>
   </div>
 </div>
 
 <script src="animation-engine.js"></script>
 <script src="draw-character.js"></script>
 <script>
+var shareEntry = null;
+
+function fmtDateKo(s){
+  try{const[y,m,d]=s.split('-');return `${y}년 ${+m}월 ${+d}일`;}
+  catch{return s||'';}
+}
+
+function playDiary(){
+  if(!shareEntry) return;
+  // 랜딩 숨기고 플레이어 표시
+  document.getElementById('landing').classList.add('hide');
+  const player = document.getElementById('player');
+  player.classList.add('show');
+
+  // 애니메이션 실행
+  const canvas = document.getElementById('share-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  startSceneSequence(canvas, shareEntry.text, shareEntry.style, shareEntry.date);
+}
+
 (function(){
   const hash = location.hash;
   if(!hash.startsWith('#share=')){
@@ -90,23 +325,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     return;
   }
   try{
-    const entry = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
+    shareEntry = JSON.parse(decodeURIComponent(escape(atob(hash.slice(7)))));
 
-    // Set metadata
-    const dateEl = document.getElementById('share-player-date');
-    const badgeEl = document.getElementById('share-player-emotion-badge');
-    if(dateEl) dateEl.textContent = fmtDateKo(entry.date);
-    if(badgeEl){
-      badgeEl.textContent = emotionLabel(entry.emotion);
-      badgeEl.style.color = emotionColor(entry.emotion);
-      badgeEl.style.borderColor = emotionColor(entry.emotion)+'44';
-    }
+    // 랜딩 정보 채우기
+    document.getElementById('landing-date').textContent = fmtDateKo(shareEntry.date);
 
-    // Play animation
-    const canvas = document.getElementById('share-canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    startSceneSequence(canvas, entry.text, entry.style, entry.date);
+    const badge = document.getElementById('landing-badge');
+    badge.textContent = emotionLabel(shareEntry.emotion);
+    badge.style.color = emotionColor(shareEntry.emotion);
+    badge.style.borderColor = emotionColor(shareEntry.emotion)+'44';
+
+    // 플레이어 메타도 미리 세팅
+    document.getElementById('share-player-date').textContent = fmtDateKo(shareEntry.date);
+    const pb = document.getElementById('share-player-emotion-badge');
+    pb.textContent = emotionLabel(shareEntry.emotion);
+    pb.style.color = emotionColor(shareEntry.emotion);
+    pb.style.borderColor = emotionColor(shareEntry.emotion)+'44';
 
   } catch(e){
     document.body.innerHTML = `
@@ -117,11 +351,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
       </div>`;
   }
 })();
-
-function fmtDateKo(s){
-  try{const[y,m,d]=s.split('-');return `${y}년 ${+m}월 ${+d}일`;}
-  catch{return s||'';}
-}
 </script>
 </body>
 </html>
