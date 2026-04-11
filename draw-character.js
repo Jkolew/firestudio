@@ -1,22 +1,25 @@
 // ═══════════════════════════════════════════════════════
-//  CHARACTER & PROPS DRAWING SYSTEM (SOMI EDITION)
+//  CHARACTER & PROPS DRAWING SYSTEM (SOMI & FRIENDS)
 // ═══════════════════════════════════════════════════════
 
-// ── CONSTANTS ──
-const SOMI_C = {
-  skin: '#FFDDC1',
-  hair: '#A67C52', // light brown
-  hairHi: '#C49A6C',
-  eye: '#FFBF00', // sparkly amber
-  shirt: '#E0F2FF', // pastel blue
-  stripe: '#FFFFFF',
-  denim: '#4682B4', // denim blue
-  denimDark: '#36648B',
-  shoe: '#FF4D4D', // red sneakers
-  daisy: '#FFFFFF',
-  daisyCenter: '#FFD700',
-  outlines: 'rgba(50, 25, 10, 0.6)'
-};
+// ── CHARACTER STYLES ──
+const CHAR_STYLES = [
+  { // 0: 소미 (Somi) - 주인공
+    skin: '#FFDDC1', hair: '#A67C52', eye: '#FFBF00', 
+    shirt: '#E0F2FF', stripe: '#FFFFFF', denim: '#4682B4', 
+    acc: 'daisy', accCol: '#FFFFFF', accCenter: '#FFD700'
+  },
+  { // 1: 하나 (Hana) - 친구 1
+    skin: '#FFE4C4', hair: '#2D1A0D', eye: '#5D4037', 
+    shirt: '#FFF9C4', stripe: '#FFD54F', denim: '#64B5F6', 
+    acc: 'heart', accCol: '#FF8FAB', accCenter: '#FFB3C6'
+  },
+  { // 2: 유리 (Yuri) - 친구 2
+    skin: '#FFDDC1', hair: '#D2B48C', eye: '#4FC3F7', 
+    shirt: '#C8E6C9', stripe: '#A5D6A7', denim: '#546E7A', 
+    acc: 'star', accCol: '#FFD93D', accCenter: '#FFF176'
+  }
+];
 
 // ── UTILITIES ──
 function roundRect(ctx, x, y, w, h, r) {
@@ -70,17 +73,18 @@ function drawCharacter(ctx,cx,cy,S,action,emotion,t,facing,_skin,_style,charIdx=
   drawWarmChiChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx);
 }
 
-// ── SOMI SYSTEM ──
+// ── FLUID SKELETON SYSTEM ──
 function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
-  const c = SOMI_C;
-  const ol = c.outlines;
+  const styleIdx = charIdx % CHAR_STYLES.length;
+  const c = CHAR_STYLES[styleIdx];
+  const ol = 'rgba(50, 25, 10, 0.6)';
   
   ctx.save();
   ctx.translate(cx, cy);
   if (facing < 0) ctx.scale(-1, 1);
 
-  const breath = Math.sin(t * 2.5) * S * 0.03;
-  const sway = Math.sin(t * 1.8) * S * 0.04;
+  const breath = Math.sin(t * 2.5 + charIdx) * S * 0.03;
+  const sway = Math.sin(t * 1.8 + charIdx) * S * 0.04;
   const j = getJoints(action, emotion, t, S);
 
   // Shadow
@@ -89,16 +93,16 @@ function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
 
   drawSomiLowerBody(ctx, j.hip, j.knL, j.ftL, j.knR, j.ftR, S, c, ol);
   const neckPos = { x: j.neck.x + sway, y: j.neck.y + breath };
-  drawSomiUpperBody(ctx, neckPos, j.hip, S, c, ol);
-  drawSomiCurvedArm(ctx, neckPos, j.elbL, j.hanL, S, c, ol, -1, action);
-  drawSomiCurvedArm(ctx, neckPos, j.elbR, j.hanR, S, c, ol, 1, action);
+  drawSomiUpperBody(ctx, neckPos, j.hip, S, c, ol, styleIdx);
+  drawSomiCurvedArm(ctx, neckPos, j.elbL, j.hanL, S, c, ol, -1, action, styleIdx);
+  drawSomiCurvedArm(ctx, neckPos, j.elbR, j.hanR, S, c, ol, 1, action, styleIdx);
   const hx = j.head.x + sway * 1.2, hy = j.head.y + breath;
-  drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t);
+  drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t, styleIdx);
 
   ctx.restore();
 }
 
-function drawSomiUpperBody(ctx, neck, hip, S, c, ol) {
+function drawSomiUpperBody(ctx, neck, hip, S, c, ol, styleIdx) {
   const nx = neck.x, ny = neck.y, hx = hip.x, hy = hip.y;
   const sw = S * 0.52, ww = S * 0.45;
   ctx.save();
@@ -111,14 +115,23 @@ function drawSomiUpperBody(ctx, neck, hip, S, c, ol) {
   ctx.quadraticCurveTo(nx, ny - S*0.05, nx - sw*0.5, ny + S*0.2);
   ctx.fill(); ctx.stroke();
   
+  // Pattern variety
   ctx.save(); ctx.clip();
-  ctx.strokeStyle = c.stripe; ctx.lineWidth = S * 0.07;
-  for(let i=0; i<12; i++) {
-    const ly = ny + i * S * 0.12;
-    ctx.beginPath(); ctx.moveTo(nx - S, ly); ctx.lineTo(nx + S, ly); ctx.stroke();
+  if (styleIdx === 0) { // Somi: Stripes
+    ctx.strokeStyle = c.stripe; ctx.lineWidth = S * 0.07;
+    for(let i=0; i<12; i++) {
+      const ly = ny + i * S * 0.12;
+      ctx.beginPath(); ctx.moveTo(nx - S, ly); ctx.lineTo(nx + S, ly); ctx.stroke();
+    }
+  } else if (styleIdx === 1) { // Hana: Dots
+    ctx.fillStyle = c.stripe;
+    for(let i=0; i<5; i++) for(let j=0; j<5; j++) {
+      ctx.beginPath(); ctx.arc(nx - S*0.5 + i*S*0.25, ny + j*S*0.25, S*0.04, 0, Math.PI*2); ctx.fill();
+    }
   }
   ctx.restore();
 
+  // Denim bib
   ctx.fillStyle = c.denim;
   const bw = S * 0.35;
   ctx.beginPath();
@@ -158,7 +171,7 @@ function drawSomiCurvedLeg(ctx, start, knee, foot, S, c, ol) {
   ctx.restore();
 }
 
-function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action) {
+function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action, styleIdx) {
   const aw = S * 0.18;
   const startX = neck.x + side * S * 0.25;
   const startY = neck.y + S * 0.25;
@@ -170,8 +183,11 @@ function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action) {
   ctx.lineTo(hand.x + aw*0.4, hand.y);
   ctx.quadraticCurveTo(elbow.x + aw*0.5, elbow.y, startX + aw*0.5, startY);
   ctx.fill(); ctx.stroke();
-  ctx.fillStyle = c.skin; ctx.beginPath(); ctx.arc(hand.x, hand.y, S*0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  if (side > 0 && action !== 'walk') {
+  
+  ctx.fillStyle = c.skin;
+  ctx.beginPath(); ctx.arc(hand.x, hand.y, S*0.1, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  
+  if (side > 0 && action !== 'walk' && styleIdx === 0) {
     ctx.save(); ctx.translate(hand.x, hand.y); ctx.rotate(-0.2);
     ctx.fillStyle = '#FFF9F0'; ctx.strokeStyle = '#5D4037'; ctx.lineWidth = 1;
     roundRect(ctx, -S*0.18, -S*0.28, S*0.36, S*0.48, 3); ctx.fill(); ctx.stroke();
@@ -183,29 +199,55 @@ function drawSomiCurvedArm(ctx, neck, elbow, hand, S, c, ol, side, action) {
 
 function drawSomiShoe(ctx, x, y, S, c, ol) {
   ctx.save(); ctx.translate(x, y);
-  ctx.fillStyle = c.shoe; ctx.beginPath(); ctx.ellipse(S*0.08, 0, S*0.24, S*0.13, 0.08, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  const shoeCol = (c.acc === 'daisy') ? '#FF4D4D' : (c.acc === 'heart') ? '#BA68C8' : '#455A64';
+  ctx.fillStyle = shoeCol; ctx.beginPath(); ctx.ellipse(S*0.08, 0, S*0.24, S*0.13, 0.08, 0, Math.PI*2); ctx.fill(); ctx.stroke();
   ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(S*0.08, S*0.06, S*0.2, S*0.05, 0, 0, Math.PI*2); ctx.fill();
   ctx.restore();
 }
 
-function drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t) {
+function drawSomiHead(ctx, hx, hy, S, c, ol, emotion, action, t, styleIdx) {
   const r = S * 0.45;
   ctx.save();
+  
+  // Hair styles
   ctx.fillStyle = c.hair; ctx.strokeStyle = ol; ctx.lineWidth = 1.8;
-  ctx.beginPath(); ctx.ellipse(hx, hy + r*0.15, r*1.2, r*1.15, Math.sin(t)*0.05, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  if (styleIdx === 0) { // Bob
+    ctx.beginPath(); ctx.ellipse(hx, hy + r*0.15, r*1.2, r*1.15, Math.sin(t)*0.05, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  } else if (styleIdx === 1) { // Wavy
+    ctx.beginPath(); ctx.ellipse(hx, hy + r*0.4, r*1.3, r*1.4, Math.sin(t)*0.08, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  } else { // Short
+    ctx.beginPath(); ctx.ellipse(hx, hy - r*0.1, r*1.1, r*1.0, Math.sin(t)*0.03, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  }
+  
   const hg = ctx.createRadialGradient(hx - r*0.25, hy - r*0.25, 0, hx, hy, r);
   hg.addColorStop(0, '#FFF9F5'); hg.addColorStop(1, c.skin);
   ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  
   drawSomiFace(ctx, hx, hy, r, emotion, action, t, c);
-  ctx.fillStyle = c.hair; ctx.beginPath();
+  
+  // Front hair
+  ctx.fillStyle = c.hair;
+  ctx.beginPath();
   ctx.arc(hx, hy - r*0.45, r*1.05, Math.PI+0.45, -0.45);
   ctx.quadraticCurveTo(hx + r*0.2, hy - r*0.05, hx - r*0.95, hy - r*0.4);
   ctx.fill(); ctx.stroke();
+  
+  // Accessories
   const px = hx - r*0.65, py = hy - r*0.75;
   ctx.save(); ctx.translate(px, py); ctx.rotate(Math.sin(t*2)*0.2);
-  ctx.fillStyle = c.daisy;
-  for(let i=0; i<6; i++) { ctx.rotate(Math.PI/3); ctx.beginPath(); ctx.ellipse(r*0.12, 0, r*0.12, r*0.06, 0, 0, Math.PI*2); ctx.fill(); }
-  ctx.fillStyle = c.daisyCenter; ctx.beginPath(); ctx.arc(0, 0, r*0.07, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = c.accCol;
+  if (c.acc === 'daisy') {
+    for(let i=0; i<6; i++) { ctx.rotate(Math.PI/3); ctx.beginPath(); ctx.ellipse(r*0.12, 0, r*0.12, r*0.06, 0, 0, Math.PI*2); ctx.fill(); }
+    ctx.fillStyle = c.accCenter; ctx.beginPath(); ctx.arc(0, 0, r*0.07, 0, Math.PI*2); ctx.fill();
+  } else if (c.acc === 'heart') {
+    drawHeart(ctx, 0, 0, r*0.2);
+  } else { // star
+    ctx.beginPath(); for(let i=0; i<5; i++) {
+      const a = i * Math.PI*0.8 - Math.PI/2;
+      ctx.lineTo(Math.cos(a)*r*0.15, Math.sin(a)*r*0.15);
+    }
+    ctx.closePath(); ctx.fill();
+  }
   ctx.restore(); ctx.restore();
 }
 
@@ -215,9 +257,10 @@ function drawSomiFace(ctx, hx, hy, r, emotion, action, t, c) {
     ctx.save();
     ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.ellipse(ex, ey, er, er*1.15, 0, 0, Math.PI*2); ctx.fill();
     const ig = ctx.createRadialGradient(ex, ey, 0, ex, ey, er);
-    ig.addColorStop(0, '#FFD700'); ig.addColorStop(0.6, '#B8860B'); ig.addColorStop(1, '#8B4513');
+    ig.addColorStop(0, c.eye); ig.addColorStop(0.6, liftColor(c.eye, -0.2)); ig.addColorStop(1, '#000');
     ctx.fillStyle = ig; ctx.beginPath(); ctx.ellipse(ex, ey+er*0.15, er*0.85, er*0.95, 0, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(ex-er*0.35, ey-er*0.35, er*0.45, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#FFF';
+    ctx.beginPath(); ctx.arc(ex-er*0.35, ey-er*0.35, er*0.45, 0, Math.PI*2); ctx.fill();
     ctx.globalAlpha = 0.7; ctx.beginPath(); ctx.arc(ex+er*0.4, ey+er*0.3, er*0.2, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   });
@@ -225,11 +268,10 @@ function drawSomiFace(ctx, hx, hy, r, emotion, action, t, c) {
   ctx.fillStyle = `rgba(255, 150, 150, ${bAlpha})`;
   ctx.beginPath(); ctx.arc(hx-eo-r*0.1, hy+r*0.3, r*0.2, 0, Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(hx+eo+r*0.1, hy+r*0.3, r*0.2, 0, Math.PI*2); ctx.fill();
-  ctx.strokeStyle = c.outlines; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
+  ctx.strokeStyle = 'rgba(50, 25, 10, 0.6)'; ctx.lineWidth = 2.5; ctx.lineCap = 'round';
   ctx.beginPath(); ctx.arc(hx, hy + r*0.35, r*0.22, 0.15, Math.PI-0.15); ctx.stroke();
 }
 
-// ── LEGACY PROPS (Optimized) ──
 function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
   if(!props||!props.length||!chars.length)return;
   if(!chars.every(c=>c.arrived))return;
@@ -237,16 +279,14 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
   for(const prop of props){
     if(prop==='phone'){
       const px=cx+S*.9,py=GY-S;
-      ctx.save();ctx.fillStyle='#0A0A20';ctx.strokeStyle=SOMI_C.outlines;ctx.lineWidth=2;
+      ctx.save();ctx.fillStyle='#0A0A20';ctx.strokeStyle='rgba(50, 25, 10, 0.6)';ctx.lineWidth=2;
       roundRect(ctx,px-S*.2,py-S*.4,S*.4,S*.7,S*.07).fill();ctx.stroke();
       ctx.fillStyle='#4488FF';ctx.globalAlpha=.4+Math.sin(t*3)*.2;
       roundRect(ctx,px-S*.14,py-S*.3,S*.28,S*.45,S*.04).fill();ctx.restore();
     }
-    // ... (기타 프랍 생략 또는 최적화된 형태로 유지)
   }
 }
 
-// ── EXISTING JOINTS SYSTEM ──
 function getJoints(action,emotion,t,S){
   const b={
     head:{x:0,y:-S*2.9},neck:{x:0,y:-S*2.3},
@@ -263,7 +303,6 @@ function getJoints(action,emotion,t,S){
       hip:b.hip,knL:{x:-S*.3+sw*.3,y:S*.9-clamp(sw,0,S)*.5},knR:{x:S*.3-sw*.3,y:S*.9+clamp(sw,0,S)*.5},
       ftL:{x:-S*.5+sw*.52,y:S*1.88},ftR:{x:S*.5-sw*.52,y:S*1.88}};
   }
-  // (나머지 동작 데이터 유지)
   const sway=Math.sin(t*1.2)*S*.04;
   return {head:{x:sway,y:b.head.y+sway*.5},neck:{x:sway*.5,y:b.neck.y},
     elbL:b.elbL,elbR:b.elbR,hanL:b.hanL,hanR:b.hanR,
