@@ -37,6 +37,7 @@
 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2973009474553970"
      crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 :root {
   --bg:#08080F; --surface:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
@@ -289,7 +290,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<!-- SHARE VIEW → share.html -->
+<!-- SHARE VIEW -->
+<div class="view hidden" id="v-share">
+  <canvas id="share-canvas"></canvas>
+  <div class="player-top">
+    <div class="player-meta">
+      <div class="player-date" id="share-player-date"></div>
+      <div class="player-emotion-badge" id="share-player-emotion-badge"></div>
+    </div>
+    <div class="share-badge">공유된 하루</div>
+  </div>
+  <div class="diary-overlay">
+    <div class="player-action-row">
+      <button class="btn-share" onclick="window.location.href='index.html'">나도 써보기</button>
+    </div>
+  </div>
+</div>
 
 <!-- CONTACT VIEW -->
 <div class="view hidden" id="v-contact">
@@ -615,7 +631,52 @@ function checkShare(){
 // ═══ INIT ═══
 window.addEventListener('resize',()=>{//   const c=document.getElementById('anim-canvas');//   if(c&&state.view==='player'&&state.currentEntry){//     c.width=window.innerWidth;c.height=window.innerHeight;//     cancelAnimationFrame(state.animFrame);state.animFrame=null;//     startSceneSequence(c,state.currentEntry.text,state.currentEntry.style);//   }
 });
-if(!checkShare()){renderCalendar();showView('calendar');}
+if(!checkShare()){
+  renderCalendar();
+  showView('calendar');
+  
+  // GSAP Intro Animation
+  gsap.from(".cal-logo", {
+    duration: 1,
+    y: 30,
+    opacity: 0,
+    ease: "power3.out",
+    delay: 0.5
+  });
+
+  gsap.from(".cal-btn-write", {
+    duration: 1,
+    y: 30,
+    opacity: 0,
+    ease: "power3.out",
+    delay: 0.7
+  });
+
+  gsap.from(".btn-to-cal", {
+    duration: 1,
+    y: 30,
+    opacity: 0,
+    ease: "power3.out",
+    stagger: 0.2,
+    delay: 0.9
+  });
+
+  gsap.from(".cal-month-nav", {
+    duration: 1.2,
+    y: 40,
+    opacity: 0,
+    ease: "power4.out",
+    delay: 1.2
+  });
+
+  gsap.from(".cal-grid", {
+    duration: 1.5,
+    y: 50,
+    opacity: 0,
+    ease: "power4.out",
+    delay: 1.5
+  });
+}
 </script>
 </body>
 </html>
