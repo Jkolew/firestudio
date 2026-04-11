@@ -1328,22 +1328,100 @@ function drawPuppyFace(ctx,cx,cy,r,emotion,action,t,expr,c){
   ctx.restore();
 }
 
+// ═══════════════════════════════════════════════════════
+//  WARM CHI CHARACTER SYSTEM (CUTE & NATURAL)
+// ═══════════════════════════════════════════════════════
+const WARMCHI_C = {
+  skin: '#FFDDC1',
+  skinHi: '#FFF0E0',
+  skinSh: '#E8B999',
+  hair: '#4A2F1B',
+  hairHi: '#6D4530',
+  hairSh: '#2D1A0D',
+  outlines: 'rgba(60, 30, 10, 0.7)',
+  clothing: [
+    { shirt: '#FFB3BA', pants: '#B2CEFE', shoe: '#888' }, // Char A
+    { shirt: '#FFFFBA', pants: '#BAFFC9', shoe: '#888' }, // Char B
+    { shirt: '#BAE1FF', pants: '#E0BBE4', shoe: '#888' }  // Char C
+  ]
+};
+
+function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
+  const c = WARMCHI_C;
+  const cl = c.clothing[Math.min(charIdx, 2)];
+  const ol = c.outlines;
+  
+  ctx.save();
+  ctx.translate(cx, cy);
+  if (facing < 0) ctx.scale(-1, 1);
+
+  // 숨쉬는 효과 (Natural Breathing)
+  const breath = Math.sin(t * 2) * S * 0.02;
+  const j = getJoints(action, emotion, t, S);
+
+  // Shadow
+  ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(0, 2, S * 0.8, S * 0.18, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+
+  // 1. Legs
+  drawHumanLeg(ctx, j.hip, j.knL, j.ftL, S, cl, c.skin, ol);
+  drawHumanLeg(ctx, j.hip, j.knR, j.ftR, S, cl, c.skin, ol);
+
+  // 2. Torso (with breathing)
+  const neckB = { x: j.neck.x, y: j.neck.y + breath };
+  drawHumanTorso(ctx, neckB, j.hip, S, cl, c.skin, ol);
+
+  // 3. Arms
+  drawHumanArm(ctx, neckB, j.elbL, j.hanL, S, cl, c.skin, ol);
+  drawHumanArm(ctx, neckB, j.elbR, j.hanR, S, cl, c.skin, ol);
+
+  // 4. Head (with breathing)
+  const hx = j.head.x, hy = j.head.y + breath;
+  drawWarmChiHead(ctx, hx, hy, S, c.skin, ol, emotion, action, t, charIdx);
+
+  ctx.restore();
+}
+
+function drawWarmChiHead(ctx, hx, hy, S, skinColor, outline, emotion, action, t, charIdx) {
+  const r = S * 0.42; // 약간 더 큰 머리 비율 (Cute)
+  ctx.save();
+  
+  // 머리카락 (뒤)
+  drawWarmChiHair(ctx, hx, hy, r, outline, WARMCHI_C.hair, charIdx, t);
+  
+  // 얼굴 구체
+  const hg = ctx.createRadialGradient(hx - r * 0.2, hy - r * 0.2, 0, hx, hy, r);
+  hg.addColorStop(0, WARMCHI_C.skinHi);
+  hg.addColorStop(0.6, skinColor);
+  hg.addColorStop(1, WARMCHI_C.skinSh);
+  ctx.fillStyle = hg; ctx.strokeStyle = outline; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(hx, hy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+  // 얼굴 표정
+  const expr = getDongliExpr(emotion, action); // 공용 표현식 활용
+  drawWarmChiFace(ctx, hx, hy, r, emotion, action, t, expr, WARMCHI_C);
+  
+  ctx.restore();
+}
+
 function drawWarmChiHair(ctx,cx,cy,r,ol,hairCol,charIdx,t){
   ctx.save();
   const c=WARMCHI_C;
+  // 머리카락 흔들림 효과
+  const sway = Math.sin(t * 1.5 + charIdx) * r * 0.05;
+
   // 뒷머리
   ctx.fillStyle=c.hairSh;ctx.strokeStyle=ol;ctx.lineWidth=r*0.06;
   ctx.beginPath();ctx.arc(cx,cy,r*1.05,Math.PI*0.1,Math.PI*0.9,false);ctx.fill();ctx.stroke();
 
   // 옆머리 (결 표현)
-  const hairSway=Math.sin(t*1.5)*r*0.03;
   [-1,1].forEach(side=>{
     ctx.save();
     const hg=ctx.createLinearGradient(cx+side*r*0.8,cy-r,cx+side*r*0.8,cy+r);
     hg.addColorStop(0,c.hairHi); hg.addColorStop(0.5,c.hair); hg.addColorStop(1,c.hairSh);
     ctx.fillStyle=hg;
     ctx.beginPath();
-    ctx.ellipse(cx+side*r*0.85+hairSway*side,cy+r*0.1,r*0.25,r*0.55,side*0.15,0,Math.PI*2);
+    ctx.ellipse(cx+side*r*0.85+sway*side,cy+r*0.1,r*0.25,r*0.55,side*0.15,0,Math.PI*2);
     ctx.fill();ctx.stroke();
     // 머릿결 선
     ctx.strokeStyle='rgba(255,255,255,0.1)';ctx.lineWidth=r*0.03;
@@ -1351,28 +1429,28 @@ function drawWarmChiHair(ctx,cx,cy,r,ol,hairCol,charIdx,t){
     ctx.restore();
   });
 
-  // 앞머리 (레이어드)
+  // 앞머리
   ctx.save();
   const fg=ctx.createLinearGradient(cx,cy-r,cx,cy);
   fg.addColorStop(0,c.hairHi); fg.addColorStop(1,c.hair);
   ctx.fillStyle=fg;
   ctx.beginPath();
-  ctx.arc(cx,cy-r*0.5,r*0.98,Math.PI+0.5,-0.5,false);
-  ctx.quadraticCurveTo(cx+r*0.2,cy-r*0.1,cx-r*0.95,cy-r*0.5);
+  ctx.arc(cx,cy-r*0.4,r*1.0,Math.PI+0.4,-0.4,false);
+  ctx.quadraticCurveTo(cx+r*0.2,cy-r*0.05,cx-r*0.9,cy-r*0.4);
   ctx.closePath();ctx.fill();ctx.stroke();
   
   // 머리 엔젤링 (윤기)
-  ctx.strokeStyle='rgba(255,255,255,0.25)';ctx.lineWidth=r*0.1;ctx.lineCap='round';
-  ctx.beginPath();ctx.arc(cx,cy-r*0.4,r*0.7,Math.PI+0.8,Math.PI+1.2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=r*0.08;ctx.lineCap='round';
+  ctx.beginPath();ctx.arc(cx,cy-r*0.5,r*0.7,Math.PI+0.9,Math.PI+1.1);ctx.stroke();
   ctx.restore();
 
-  // 캐릭터별 액세서리
+  // 액세서리
   if(charIdx===1){ // 하트 핀
     ctx.fillStyle='#FF8FAB';ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=1;
-    drawHeart(ctx,cx-r*0.65,cy-r*0.75,r*0.18);
+    drawHeart(ctx,cx-r*0.6,cy-r*0.7,r*0.18);
   } else if(charIdx===2){ // 별 핀
     ctx.fillStyle='#FFD93D';ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=1;
-    const sx=cx+r*0.5,sy=cy-r*0.7,sz=r*0.15;
+    const sx=cx+r*0.5,sy=cy-r*0.65,sz=r*0.15;
     ctx.beginPath();
     for(let i=0;i<5;i++){
       const a=i*Math.PI*0.8-Math.PI/2;
@@ -1385,49 +1463,46 @@ function drawWarmChiHair(ctx,cx,cy,r,ol,hairCol,charIdx,t){
 
 function drawWarmChiFace(ctx,cx,cy,r,emotion,action,t,expr,c){
   ctx.save();
-  const eo=r*0.3, ey=cy-r*0.05, er=r*0.15, my=cy+r*0.35;
+  const eo=r*0.35, ey=cy-r*0.05, er=r*0.16, my=cy+r*0.35;
   const ol='rgba(60,30,10,0.8)';
 
-  // 눈 (생기 넘치는 표현)
+  // 눈 (초롱초롱한 반짝임)
   [cx-eo,cx+eo].forEach((ex,i)=>{
     ctx.save();
-    // 눈동자 베이스
-    ctx.fillStyle='#FFFFFF';
-    ctx.beginPath();ctx.ellipse(ex,ey,er,er*1.1,0,0,Math.PI*2);ctx.fill();
-    
-    // 홍채 (부드러운 색감)
+    // 눈동자
+    ctx.fillStyle='#FFFFFF'; ctx.beginPath(); ctx.ellipse(ex,ey,er,er*1.1,0,0,Math.PI*2); ctx.fill();
     const ig=ctx.createRadialGradient(ex,ey,0,ex,ey,er);
-    ig.addColorStop(0,'#4A2F1B');ig.addColorStop(1,'#2D1A0D');
-    ctx.fillStyle=ig;
-    ctx.beginPath();ctx.ellipse(ex,ey+er*0.1,er*0.85,er*0.9,0,0,Math.PI*2);ctx.fill();
+    ig.addColorStop(0,'#4A2F1B'); ig.addColorStop(1,'#2D1A0D');
+    ctx.fillStyle=ig; ctx.beginPath(); ctx.ellipse(ex,ey+er*0.1,er*0.85,er*0.9,0,0,Math.PI*2); ctx.fill();
     
-    // 하이라이트 (반짝임)
+    // 반짝임 하이라이트 (Cute point)
     ctx.fillStyle='#FFFFFF';
-    ctx.beginPath();ctx.arc(ex-er*0.3,ey-er*0.3,er*0.35,0,Math.PI*2);ctx.fill(); // 메인 반짝임
-    ctx.globalAlpha=0.6;
-    ctx.beginPath();ctx.arc(ex+er*0.4,ey+er*0.3,er*0.15,0,Math.PI*2);ctx.fill(); // 서브 반짝임
+    ctx.beginPath(); ctx.arc(ex-er*0.3,ey-er*0.3,er*0.35,0,Math.PI*2); ctx.fill(); // 메인
+    ctx.globalAlpha=0.6; ctx.beginPath(); ctx.arc(ex+er*0.4,ey+er*0.3,er*0.15,0,Math.PI*2); ctx.fill(); // 서브
     ctx.restore();
   });
 
-  // 볼터치 (수줍은 느낌)
-  const blushAlpha=0.4+Math.sin(t*2)*0.1;
+  // 볼터치
+  const blushAlpha=0.3 + Math.sin(t*2.5)*0.1;
   ctx.fillStyle=`rgba(255,150,170,${blushAlpha})`;
-  ctx.beginPath();ctx.ellipse(cx-eo-r*0.1,cy+r*0.2,r*0.25,r*0.12,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(cx+eo+r*0.1,cy+r*0.2,r*0.25,r*0.12,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx-eo-r*0.1,cy+r*0.2,r*0.28,r*0.14,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(cx+eo+r*0.1,cy+r*0.2,r*0.28,r*0.14,0,0,Math.PI*2);ctx.fill();
 
-  // 입 (작고 귀여운 미소)
+  // 입
   ctx.strokeStyle=ol;ctx.lineWidth=r*0.08;ctx.lineCap='round';
   ctx.beginPath();
-  if(expr.mouth==='u_smile') ctx.arc(cx,my-r*0.1,r*0.2,0.2,Math.PI-0.2);
-  else ctx.arc(cx,my-r*0.05,r*0.15,0.3,Math.PI-0.3);
+  if(['happy','excited'].includes(emotion)) ctx.arc(cx,my-r*0.1,r*0.25,0.1,Math.PI-0.1);
+  else if(emotion==='love') ctx.arc(cx,my-r*0.05,r*0.2,0.3,Math.PI-0.3);
+  else ctx.arc(cx,my-r*0.05,r*0.15,0.4,Math.PI-0.4);
   ctx.stroke();
 
-  // 눈썹 (부드러운 갈색)
-  ctx.strokeStyle='rgba(100,60,40,0.5)';ctx.lineWidth=r*0.06;
+  // 눈썹
+  ctx.strokeStyle='rgba(100,60,40,0.4)';ctx.lineWidth=r*0.06;
   ctx.beginPath();
-  ctx.moveTo(cx-eo-er,ey-r*0.35);ctx.quadraticCurveTo(cx-eo,ey-r*0.45,cx-eo+er,ey-r*0.35);
-  ctx.moveTo(cx+eo-er,ey-r*0.35);ctx.quadraticCurveTo(cx+eo,ey-r*0.45,cx+eo+er,ey-r*0.35);
+  ctx.moveTo(cx-eo-er,ey-r*0.4);ctx.quadraticCurveTo(cx-eo,ey-r*0.5,cx-eo+er,ey-r*0.4);
+  ctx.moveTo(cx+eo-er,ey-r*0.4);ctx.quadraticCurveTo(cx+eo,ey-r*0.5,cx+eo+er,ey-r*0.4);
   ctx.stroke();
 
   ctx.restore();
 }
+
