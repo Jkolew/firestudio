@@ -1086,26 +1086,29 @@ function drawPuppyChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx){
   ctx.beginPath();ctx.arc(tBaseX+S*0.28+tw*S*0.50,tBaseY-S*0.98-tw*S*0.28,S*0.20,0,Math.PI*2);ctx.fill();ctx.stroke();
   ctx.restore();
 
-  // BACK LEGS
-  let lFx=-rb*0.52,lFy=0,rFx=rb*0.52,rFy=0;
+  // BACK LEGS — short chubby stubs
+  const legW=S*0.27;
+  let lFx=-rb*0.44,lFy=-S*0.06,rFx=rb*0.44,rFy=-S*0.06;
   if(action==='walk'||action==='run'){
-    const spd=action==='run'?5.5:3.2,sw=Math.sin(t*spd)*S*(action==='run'?0.16:0.10);
-    lFy=sw;rFy=-sw;
+    const spd=action==='run'?5.5:3.2,sw=Math.sin(t*spd)*S*(action==='run'?0.09:0.06);
+    lFy+= sw;rFy+= -sw;
   }else if(['sit','work','write','eat','read','game'].includes(action)){
-    lFx=-rb*0.80;rFx=rb*0.80;
+    lFx=-rb*0.64;rFx=rb*0.64;
   }else if(action==='dance'||action==='laugh'){
-    const sp=Math.abs(Math.sin(t*3.5))*S*0.07;
-    lFx=-rb*0.62;rFx=rb*0.62;lFy=-sp;rFy=-sp;
+    const sp=Math.abs(Math.sin(t*3.5))*S*0.05;
+    lFx=-rb*0.52;rFx=rb*0.52;lFy-=sp;rFy-=sp;
   }
-  const legTopY=bcy+bounce+rby*0.80;
-  const footR=S*0.21;
+  const legTopY=bcy+bounce+rby*0.82;
+  const footR=S*0.19;
   [[lFx,lFy,-1],[rFx,rFy,1]].forEach(([ex,ey,side])=>{
-    drawTaperedLimb(ctx,side*rb*0.36,legTopY,S*0.23,ex,ey+bounce*0.5,S*0.17,c.fur,ol,S*0.062);
-    ctx.save();ctx.translate(ex,ey+bounce*0.5);
-    ctx.fillStyle=c.fur;ctx.strokeStyle=ol;ctx.lineWidth=S*0.062;
-    ctx.beginPath();ctx.ellipse(side*footR*0.38,0,footR*1.18,footR*0.72,0,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle=c.earInner;
-    for(let td=-1;td<=1;td++){ctx.beginPath();ctx.arc(side*footR*0.38+td*footR*0.30,-footR*0.28,footR*0.20,0,Math.PI*2);ctx.fill();}
+    // Equal-width limb = round pill, not taper
+    drawTaperedLimb(ctx,side*rb*0.30,legTopY,legW,ex,ey+bounce*0.35,legW,c.fur,ol,S*0.060);
+    ctx.save();ctx.translate(ex,ey+bounce*0.35);
+    ctx.fillStyle=c.fur;ctx.strokeStyle=ol;ctx.lineWidth=S*0.060;
+    ctx.beginPath();ctx.ellipse(side*footR*0.28,0,footR*1.05,footR*0.64,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+    // Subtle toe bumps
+    ctx.fillStyle=c.earInner;ctx.globalAlpha=0.60;
+    for(let td=-1;td<=1;td++){ctx.beginPath();ctx.arc(side*footR*0.28+td*footR*0.24,-footR*0.20,footR*0.17,0,Math.PI*2);ctx.fill();}
     ctx.restore();
   });
 
@@ -1121,25 +1124,27 @@ function drawPuppyChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx){
   ctx.beginPath();ctx.ellipse(-rb*0.26,bcy+bounce-rby*0.30,rb*0.28,rby*0.18,-0.36,0,Math.PI*2);ctx.fill();
   ctx.restore();
 
-  // ARMS
-  let lA={sx:-rb*0.90,sy:bcy+bounce-rby*0.10,ex:-rb*1.54,ey:bcy+bounce+rby*0.34};
-  let rA={sx:rb*0.90,sy:bcy+bounce-rby*0.10,ex:rb*1.54,ey:bcy+bounce+rby*0.34};
-  if(action==='walk'){const sw=Math.sin(t*3.2)*rb*0.16;lA.ey+=sw;rA.ey-=sw;}
-  else if(action==='run'){const sw=Math.sin(t*5.5)*rb*0.28;lA={sx:-rb*0.86,sy:bcy+bounce-rby*0.10,ex:-rb*1.46,ey:bcy+bounce-rby*0.18+sw};rA={sx:rb*0.86,sy:bcy+bounce-rby*0.10,ex:rb*1.46,ey:bcy+bounce-rby*0.18-sw};}
-  else if(action==='dance'||action==='laugh'){const sw=Math.sin(t*3.8)*rb*0.18;lA={sx:-rb*0.90,sy:bcy+bounce-rby*0.10,ex:-rb*1.48,ey:bcy+bounce-rby*0.68+sw};rA={sx:rb*0.90,sy:bcy+bounce-rby*0.10,ex:rb*1.48,ey:bcy+bounce-rby*0.68-sw};}
-  else if(action==='wave'||action==='talk'){const sw=Math.sin(t*4.0)*rb*0.22;rA={sx:rb*0.88,sy:bcy+bounce-rby*0.10,ex:rb*1.34,ey:bcy+bounce-rby*0.80-sw};}
-  else if(action==='hug'||action==='kiss'){lA={sx:-rb*0.90,sy:bcy+bounce-rby*0.10,ex:-rb*0.28,ey:bcy+bounce-rby*0.62};rA={sx:rb*0.90,sy:bcy+bounce-rby*0.10,ex:rb*0.28,ey:bcy+bounce-rby*0.62};}
-  else if(action==='think'){rA={sx:rb*0.86,sy:bcy+bounce+rby*0.14,ex:rb*0.38,ey:bcy+bounce-rby*0.56+Math.sin(t*1.5)*rb*0.04};}
-  else if(['write','eat','drink','read','game','work'].includes(action)){lA={sx:-rb*0.84,sy:bcy+bounce+rby*0.22,ex:-rb*0.38,ey:bcy+bounce+rby*0.64};rA={sx:rb*0.84,sy:bcy+bounce+rby*0.22,ex:rb*0.38,ey:bcy+bounce+rby*0.64};}
-  else if(action==='sleep'){lA={sx:-rb*0.90,sy:bcy+bounce+rby*0.28,ex:-rb*1.46,ey:bcy+bounce+rby*0.54};rA={sx:rb*0.90,sy:bcy+bounce+rby*0.28,ex:rb*1.46,ey:bcy+bounce+rby*0.54};}
-  else if(['sad','lonely'].includes(emotion)&&action==='idle'){lA={sx:-rb*0.90,sy:bcy+bounce+rby*0.28,ex:-rb*1.44,ey:bcy+bounce+rby*0.56};rA={sx:rb*0.90,sy:bcy+bounce+rby*0.28,ex:rb*1.44,ey:bcy+bounce+rby*0.56};}
-  else{const sw=Math.sin(t*1.2)*rb*0.04;lA.ey+=sw;rA.ey-=sw;}
+  // ARMS — short chubby stubs, no long reaches
+  const armW=S*0.26, pawR=S*0.22;
+  let lA={sx:-rb*0.88,sy:bcy+bounce-rby*0.08,ex:-rb*1.20,ey:bcy+bounce+rby*0.16};
+  let rA={sx:rb*0.88,sy:bcy+bounce-rby*0.08,ex:rb*1.20,ey:bcy+bounce+rby*0.16};
+  if(action==='walk'){const sw=Math.sin(t*3.2)*rb*0.10;lA.ey+=sw;rA.ey-=sw;}
+  else if(action==='run'){const sw=Math.sin(t*5.5)*rb*0.18;lA={sx:-rb*0.84,sy:bcy+bounce-rby*0.08,ex:-rb*1.14,ey:bcy+bounce-rby*0.04+sw};rA={sx:rb*0.84,sy:bcy+bounce-rby*0.08,ex:rb*1.14,ey:bcy+bounce-rby*0.04-sw};}
+  else if(action==='dance'||action==='laugh'){const sw=Math.sin(t*3.8)*rb*0.14;lA={sx:-rb*0.88,sy:bcy+bounce-rby*0.10,ex:-rb*1.16,ey:bcy+bounce-rby*0.46+sw};rA={sx:rb*0.88,sy:bcy+bounce-rby*0.10,ex:rb*1.16,ey:bcy+bounce-rby*0.46-sw};}
+  else if(action==='wave'||action==='talk'){const sw=Math.sin(t*4.0)*rb*0.16;rA={sx:rb*0.86,sy:bcy+bounce-rby*0.08,ex:rb*1.08,ey:bcy+bounce-rby*0.60-sw};}
+  else if(action==='hug'||action==='kiss'){lA={sx:-rb*0.88,sy:bcy+bounce-rby*0.10,ex:-rb*0.30,ey:bcy+bounce-rby*0.54};rA={sx:rb*0.88,sy:bcy+bounce-rby*0.10,ex:rb*0.30,ey:bcy+bounce-rby*0.54};}
+  else if(action==='think'){rA={sx:rb*0.84,sy:bcy+bounce+rby*0.12,ex:rb*0.36,ey:bcy+bounce-rby*0.38+Math.sin(t*1.5)*rb*0.03};}
+  else if(['write','eat','drink','read','game','work'].includes(action)){lA={sx:-rb*0.82,sy:bcy+bounce+rby*0.20,ex:-rb*0.34,ey:bcy+bounce+rby*0.52};rA={sx:rb*0.82,sy:bcy+bounce+rby*0.20,ex:rb*0.34,ey:bcy+bounce+rby*0.52};}
+  else if(action==='sleep'){lA={sx:-rb*0.88,sy:bcy+bounce+rby*0.26,ex:-rb*1.22,ey:bcy+bounce+rby*0.46};rA={sx:rb*0.88,sy:bcy+bounce+rby*0.26,ex:rb*1.22,ey:bcy+bounce+rby*0.46};}
+  else if(['sad','lonely'].includes(emotion)&&action==='idle'){lA={sx:-rb*0.88,sy:bcy+bounce+rby*0.26,ex:-rb*1.18,ey:bcy+bounce+rby*0.48};rA={sx:rb*0.88,sy:bcy+bounce+rby*0.26,ex:rb*1.18,ey:bcy+bounce+rby*0.48};}
+  else{const sw=Math.sin(t*1.2)*rb*0.03;lA.ey+=sw;rA.ey-=sw;}
   [lA,rA].forEach(a=>{
-    drawTaperedLimb(ctx,a.sx,a.sy,S*0.22,a.ex,a.ey,S*0.16,c.fur,ol,S*0.065);
-    ctx.save();ctx.fillStyle=c.fur;ctx.strokeStyle=ol;ctx.lineWidth=S*0.065;
-    ctx.beginPath();ctx.arc(a.ex,a.ey,S*0.21,0,Math.PI*2);ctx.fill();ctx.stroke();
-    ctx.fillStyle='rgba(255,255,255,0.40)';
-    ctx.beginPath();ctx.ellipse(a.ex-S*0.08,a.ey-S*0.08,S*0.10,S*0.07,-0.5,0,Math.PI*2);ctx.fill();
+    // Equal width at both ends = round pill shape (not tapered wedge)
+    drawTaperedLimb(ctx,a.sx,a.sy,armW,a.ex,a.ey,armW*0.90,c.fur,ol,S*0.060);
+    ctx.save();ctx.fillStyle=c.fur;ctx.strokeStyle=ol;ctx.lineWidth=S*0.060;
+    ctx.beginPath();ctx.arc(a.ex,a.ey,pawR,0,Math.PI*2);ctx.fill();ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.38)';
+    ctx.beginPath();ctx.ellipse(a.ex-pawR*0.28,a.ey-pawR*0.26,pawR*0.36,pawR*0.22,-0.5,0,Math.PI*2);ctx.fill();
     ctx.restore();
   });
   if((action==='walk'||action==='idle')&&emotion==='rain') drawPastelUmbrella(ctx,rA.ex,rA.ey,S,c.fur,ol);
