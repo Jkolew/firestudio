@@ -19,9 +19,11 @@
 | 1 | 하나 (Hana) | 감자머리, 송충이 눈썹, 긴 머리 | 핑크 상의, 파란 하의 |
 | 2 | 유리 (Yuri) | 감자머리, 송충이 눈썹, 숏컷 | 민트 상의, 남색 하의 |
 
-## 4. 드로잉 엔진 (Shin-Style Engine V4)
+## 4. 드로잉 엔진 (Shin-Style Engine V4.1)
 - **Authentic Potato Head**: 베지에 곡선(bezierCurveTo)을 사용하여 짱구 특유의 툭 튀어나온 볼 윤곽을 구현.
 - **Caterpillar Brows**: 캐릭터의 모든 감정 상태에서 굵고 검은 송충이 눈썹을 유지하여 원작의 정체성 확보.
+- **Themed Background & Frame**: `애니메이션 그림체.png`를 기반으로 한 고정 배경과 수작업 느낌의 검은색 외곽선 틀(Frame)을 적용하여 완성도 높은 애니메이션 연출.
+- **Shin-chan Style Caption**: 자막 상자를 둥근 사각형과 굵은 테두리로 디자인하여 원작의 자막 스타일을 재현.
 - **Simplified Features**: 복잡한 그라데이션 대신 굵은 검은색 외곽선과 단순한 타원형 눈을 사용하여 애니메이션 느낌을 극대화.
 - **Squat Proportions**: 인체 비율을 의도적으로 짧고 뭉툭하게 조정하여 귀여운 느낌 강조.
 - **Environment System**: 장소 키워드에 따라 눈(Snow), LED(PC방) 등 배경 효과 자동 생성.

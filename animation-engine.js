@@ -247,6 +247,15 @@ function drawWeather(ctx, W, H, GY, weather, t) {
   }
 }
 
+// ═══ BACKGROUND & FRAME LOAD ═══
+let bgImage = null;
+const loadBg = () => new Promise(res => {
+  if(bgImage) return res(bgImage);
+  const img = new Image(); img.src = '애니메이션 그림체.png';
+  img.onload = () => { bgImage = img; res(img); };
+  img.onerror = () => res(null);
+});
+
 async function startSceneSequence(canvas,text,artStyle,dateStr){
   const ctx=canvas.getContext('2d');
   const W=canvas.width, H=canvas.height;
@@ -254,6 +263,9 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
   const sentences=parseSentences(text);
   const charCounts=buildCumulativeCharCounts(sentences);
   
+  // Load background image first
+  await loadBg();
+
   // 1. AI 분석 또는 키워드 분석 (Hybrid)
   const scenes = await Promise.all(sentences.map(async (s, i) => {
     const aiResult = await analyzeWithGemini(s);
@@ -296,12 +308,18 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
     const localT=elapsed % sceneDuration;
 
     ctx.clearRect(0,0,W,H);
-    // Sky background (time-of-day aware)
-    drawSky(ctx, W, GY, scene.time_of_day || 'afternoon', localT);
-    // Ground area
-    ctx.fillStyle=PALETTES.anime.paper; ctx.fillRect(0,GY,W,H-GY);
-    ctx.strokeStyle=PALETTES.anime.groundLine; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(W,GY); ctx.stroke();
+    
+    // 1. Draw Background Image (Shin-chan Style Template)
+    if(bgImage) {
+      // Draw as background (Cover)
+      const iw=bgImage.width, ih=bgImage.height;
+      const scale=Math.max(W/iw, H/ih);
+      const dw=iw*scale, dh=ih*scale;
+      ctx.drawImage(bgImage, (W-dw)/2, (H-dh)/2, dw, dh);
+    } else {
+      // Fallback to paper color if image fails
+      ctx.fillStyle='#FFFBF0'; ctx.fillRect(0,0,W,H);
+    }
 
     // Environment & Props
     const ssChars=Array.from({length:scene.charCount},(_,i)=>({
@@ -309,7 +327,7 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
     }));
 
     drawProps(ctx,W,H,GY,S,scene.props,ssChars,artStyle,localT,scene.location);
-    // Weather overlay
+    // Weather overlay (Keep subtle weather effects)
     drawWeather(ctx, W, H, GY, scene.weather || 'clear', localT);
 
     // Characters
@@ -320,9 +338,28 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
       drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i,sceneIntensity);
     }
 
-    // Text Overlay
-    ctx.save(); ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.font='20px Noto Serif KR'; ctx.textAlign='center';
-    ctx.fillText(scene.text, W/2, H*0.15); ctx.restore();
+    // Text Overlay - Shin-chan Style Caption
+    ctx.save();
+    ctx.font='bold 20px Noto Serif KR';
+    const tw = ctx.measureText(scene.text).width;
+    const padding = 24;
+    
+    // Caption Box
+    ctx.fillStyle = 'rgba(255,255,255,0.92)';
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5;
+    roundRect(ctx, W/2 - tw/2 - padding, H*0.08, tw + padding*2, 45, 12).fill();
+    ctx.stroke();
+
+    ctx.fillStyle='#000'; ctx.textAlign='center';
+    ctx.fillText(scene.text, W/2, H*0.135); 
+    ctx.restore();
+
+    // 2. Draw Frame Overlay (Black border)
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 12;
+    ctx.strokeRect(0, 0, W, H);
+    // Rough inner line for hand-drawn feel
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, W-20, H-20);
 
     requestAnimationFrame(render);
   }
