@@ -2,42 +2,61 @@
 //  ANIMATION ENGINE (V3 - UNIVERSAL & AI READY)
 // ═══════════════════════════════════════════════════════
 
+// ═══ [중요] 개발자 API 키 설정 ═══
+// 여기에 본인의 Gemini API 키를 따옴표 안에 넣으세요.
+// 모든 사용자가 이 키를 통해 AI 분석을 사용하게 됩니다.
+const DEVELOPER_API_KEY = ""; // 키는 앱 설정에서 직접 입력
+
 function rand(a,b){return Math.random()*(b-a)+a;}
 function randInt(a,b){return Math.floor(rand(a,b+1));}
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 
-// ═══ GEMINI AI INTERFACE (SECURE STRUCTURE) ═══
-// 보안을 위해 API 키를 직접 넣지 마세요. 
-// 실제 서비스 시에는 Firebase Functions와 같은 백엔드를 통하거나, 
-// 사용자로부터 직접 키를 입력받아 localStorage에 저장하는 방식이 안전합니다.
-
+// ═══ GEMINI AI INTERFACE ═══
 async function analyzeWithGemini(text) {
-  // 1. localStorage에서 키를 찾거나 백엔드 엔드포인트를 확인합니다.
-  const userApiKey = localStorage.getItem('GEMINI_API_KEY');
+  // 1. 개별 사용자가 설정한 키가 있는지 먼저 확인 (우선순위)
+  // 2. 없으면 개발자가 설정한 DEVELOPER_API_KEY 사용
+  const userApiKey = localStorage.getItem('GEMINI_API_KEY') || DEVELOPER_API_KEY;
   
-  if (!userApiKey) return null; // 키가 설정되지 않았다면 기존 키워드 모드로 작동
+  if (!userApiKey) return null; // 둘 다 없으면 키워드 모드로 작동
 
   const prompt = `
-    Analyze the following diary sentence and return ONLY a JSON object.
+    Analyze the following Korean diary sentence and return a JSON object for a character animation.
     Sentence: "${text}"
-    Available Actions: throw, hug, kiss, cry, laugh, eat, drink, game, sleep, walk, run, work, talk, wave, sit, cook, shop, dance, swim, climb, jump, idle.
-    Available Locations: snow, pcroom, cafe, home, outside, sea, mountain, school, store, office.
-    Available Props: snowball, ball, phone, game, book, coffee, food, bag, money, music, umbrella.
-    Return Format: {"action": "...", "location": "...", "props": ["...", "..."], "emotion": "..."}
+
+    Rules:
+    1. Select the BEST 'action' from: throw, hug, kiss, cry, laugh, eat, drink, game, sleep, walk, run, work, talk, wave, sit, cook, shop, dance, swim, climb, jump, idle.
+    2. Select the BEST 'location' from: snow, pcroom, cafe, home, outside, sea, mountain, school, store, office.
+    3. Select 1-2 'props' from: snowball, ball, phone, game, book, coffee, food, bag, money, music, umbrella.
+    4. Detect 'emotion' from: happy, sad, angry, peaceful, excited, lonely, night, rain, love, neutral.
+    5. 'charCount': Count the TOTAL number of people involved.
+       - If it says "met 2 friends", charCount is 3 (author + 2 friends).
+       - If it says "with my family (mom, dad)", charCount is 3.
+       - If no mention of others, charCount is 1.
+       - Max limit is 5 for screen layout.
+    6. 'time_of_day': Infer the time from context. Choose from: "morning", "afternoon", "evening", "night". Default "afternoon" if unclear.
+    7. 'intensity': A float 0.0–1.0 representing emotional intensity. 0.0=very calm, 1.0=very intense/dramatic.
+    8. 'weather': Infer weather from context. Choose from: "clear", "cloudy", "rain", "snow". Default "clear" if unclear.
+
+    Return Format (ONLY JSON, no extra text):
+    {"action": "...", "location": "...", "props": ["..."], "emotion": "...", "charCount": number, "time_of_day": "...", "intensity": number, "weather": "..."}
   `;
 
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userApiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${userApiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
     });
     const data = await response.json();
     if (data.error) throw new Error(data.error.message);
-    const resultText = data.candidates[0].content.parts[0].text;
-    return JSON.parse(resultText.substring(resultText.indexOf('{'), resultText.lastIndexOf('}') + 1));
+    
+    let resultText = data.candidates[0].content.parts[0].text;
+    resultText = resultText.replace(/```json|```/g, "").trim();
+    const jsonStart = resultText.indexOf('{');
+    const jsonEnd = resultText.lastIndexOf('}');
+    return JSON.parse(resultText.substring(jsonStart, jsonEnd + 1));
   } catch (e) {
-    console.warn("Gemini AI 모드 비활성 (키가 없거나 오류):", e.message);
+    console.error("Gemini AI 분석 실패:", e.message);
     return null;
   }
 }
@@ -161,6 +180,73 @@ const PALETTES={
   anime:  {char1:'#FFD0BC',char2:'#FFB898',char3:'#EC9872',accent:'#FF8FAD',outline:'rgba(68,36,16,0.58)',paper:'#FFFBF0',ground:'#EED8C2',groundLine:'rgba(162,128,98,0.40)'},
 };
 
+// ═══ SKY RENDERER ═══
+function drawSky(ctx, W, GY, timeOfDay, t) {
+  const SKIES = {
+    morning:   ['#FFD4A8', '#FFE8B0', '#B8E0F7'],
+    afternoon: ['#87CEEB', '#5BA3D9', '#3A87C8'],
+    evening:   ['#FF7043', '#FF5082', '#7B2D8B'],
+    night:     ['#0A0A1E', '#12124A', '#1A2060'],
+  };
+  const stops = SKIES[timeOfDay] || SKIES.afternoon;
+  const grad = ctx.createLinearGradient(0, 0, 0, GY);
+  stops.forEach((c, i) => grad.addColorStop(i / (stops.length - 1), c));
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, GY);
+
+  if (timeOfDay === 'night') {
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    for (let i = 0; i < 40; i++) {
+      const sx = ((Math.sin(i * 2.7) * 0.5 + 0.5)) * W;
+      const sy = ((Math.sin(i * 3.9) * 0.5 + 0.5)) * GY * 0.85;
+      const sz = 0.8 + Math.abs(Math.sin(t * 1.5 + i)) * 1.2;
+      ctx.beginPath(); ctx.arc(sx, sy, sz, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (timeOfDay === 'morning') {
+    // Sun
+    ctx.save(); ctx.globalAlpha = 0.6;
+    const sg = ctx.createRadialGradient(W * 0.15, GY * 0.3, 0, W * 0.15, GY * 0.3, GY * 0.25);
+    sg.addColorStop(0, '#FFFDE0'); sg.addColorStop(1, 'transparent');
+    ctx.fillStyle = sg; ctx.fillRect(0, 0, W, GY); ctx.restore();
+  } else if (timeOfDay === 'evening') {
+    // Sunset glow
+    ctx.save(); ctx.globalAlpha = 0.4;
+    const eg = ctx.createRadialGradient(W * 0.5, GY, 0, W * 0.5, GY, GY * 0.8);
+    eg.addColorStop(0, '#FFD700'); eg.addColorStop(1, 'transparent');
+    ctx.fillStyle = eg; ctx.fillRect(0, 0, W, GY); ctx.restore();
+  }
+}
+
+// ═══ WEATHER RENDERER ═══
+function drawWeather(ctx, W, H, GY, weather, t) {
+  if (weather === 'rain') {
+    ctx.save(); ctx.strokeStyle = 'rgba(120, 170, 255, 0.55)'; ctx.lineWidth = 1.5;
+    for (let i = 0; i < 35; i++) {
+      const rx = ((Math.sin(i * 2.1 + 0.5) * 0.5 + 0.5)) * W;
+      const ry = (t * 350 + i * (H / 35)) % H;
+      ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 3, ry + 16); ctx.stroke();
+    }
+    ctx.restore();
+  } else if (weather === 'snow') {
+    ctx.save(); ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+    for (let i = 0; i < 25; i++) {
+      const sx = ((Math.sin(i * 1.7 + t * 0.4) * 0.5 + 0.5)) * W;
+      const sy = (t * 70 + i * (H / 25)) % H;
+      ctx.beginPath(); ctx.arc(sx, sy, 2.5 + Math.sin(i) * 1, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  } else if (weather === 'cloudy') {
+    ctx.save(); ctx.globalAlpha = 0.18; ctx.fillStyle = '#AAC8E8';
+    for (let i = 0; i < 3; i++) {
+      const cx = (W * (0.2 + i * 0.3) + Math.sin(t * 0.2 + i) * 20);
+      const cy = GY * (0.2 + i * 0.12);
+      ctx.beginPath(); ctx.arc(cx, cy, GY * 0.12, 0, Math.PI * 2);
+      ctx.arc(cx + GY * 0.1, cy - GY * 0.05, GY * 0.09, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
 async function startSceneSequence(canvas,text,artStyle,dateStr){
   const ctx=canvas.getContext('2d');
   const W=canvas.width, H=canvas.height;
@@ -172,20 +258,27 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
   const scenes = await Promise.all(sentences.map(async (s, i) => {
     const aiResult = await analyzeWithGemini(s);
     if (aiResult) {
-      return { 
-        text: s, 
-        emotion: aiResult.emotion || detectEmotion(text), 
+      return {
+        text: s,
+        emotion: aiResult.emotion || detectEmotion(text),
         action: aiResult.action || 'idle',
         location: aiResult.location || null,
         props: aiResult.props || [],
-        charCount: charCounts[i]
+        charCount: aiResult.charCount || charCounts[i],
+        time_of_day: aiResult.time_of_day || 'afternoon',
+        intensity: typeof aiResult.intensity === 'number' ? aiResult.intensity : 0.5,
+        weather: aiResult.weather || 'clear'
       };
     }
     // Fallback to keywords
+    const emo = detectEmotion(text);
     return {
-      text:s, emotion: detectEmotion(text), action:detectAction(s),
+      text:s, emotion: emo, action:detectAction(s),
       location:detectLocation(s), props:detectProps(s),
-      charCount:charCounts[i]
+      charCount:charCounts[i],
+      time_of_day: emo === 'night' ? 'night' : 'afternoon',
+      intensity: 0.5,
+      weather: emo === 'rain' ? 'rain' : 'clear'
     };
   }));
 
@@ -203,8 +296,10 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
     const localT=elapsed % sceneDuration;
 
     ctx.clearRect(0,0,W,H);
-    // Background
-    ctx.fillStyle=PALETTES.anime.paper; ctx.fillRect(0,0,W,H);
+    // Sky background (time-of-day aware)
+    drawSky(ctx, W, GY, scene.time_of_day || 'afternoon', localT);
+    // Ground area
+    ctx.fillStyle=PALETTES.anime.paper; ctx.fillRect(0,GY,W,H-GY);
     ctx.strokeStyle=PALETTES.anime.groundLine; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(0,GY); ctx.lineTo(W,GY); ctx.stroke();
 
@@ -212,14 +307,17 @@ async function startSceneSequence(canvas,text,artStyle,dateStr){
     const ssChars=Array.from({length:scene.charCount},(_,i)=>({
       x:W/2+(i-(scene.charCount-1)/2)*S*2.5, y:GY, arrived:true, facing:1
     }));
-    
+
     drawProps(ctx,W,H,GY,S,scene.props,ssChars,artStyle,localT,scene.location);
+    // Weather overlay
+    drawWeather(ctx, W, H, GY, scene.weather || 'clear', localT);
 
     // Characters
     scenes[sceneIdx].chars=ssChars;
+    const sceneIntensity = scene.intensity ?? 0.5;
     for(let i=0; i<ssChars.length; i++){
       const ch=ssChars[i];
-      drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i);
+      drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i,sceneIntensity);
     }
 
     // Text Overlay

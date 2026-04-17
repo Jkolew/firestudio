@@ -42,22 +42,23 @@ function drawHeart(ctx,x,y,s){
   ctx.bezierCurveTo(-s*.7,-s*.5,0,-s*.5,0,-s*.15);ctx.fill();ctx.restore();
 }
 
-function drawCharacter(ctx,cx,cy,S,action,emotion,t,facing,_skin,_style,charIdx=0){
-  drawWarmChiChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx);
+function drawCharacter(ctx,cx,cy,S,action,emotion,t,facing,_skin,_style,charIdx=0,intensity=0.5){
+  drawWarmChiChar(ctx,cx,cy,S,action,emotion,t,facing,charIdx,intensity);
 }
 
 // ── SOMI CORE ──
-function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx) {
+function drawWarmChiChar(ctx, cx, cy, S, action, emotion, t, facing, charIdx, intensity=0.5) {
   const styleIdx = charIdx % CHAR_STYLES.length;
   const c = CHAR_STYLES[styleIdx];
   const ol = 'rgba(50, 25, 10, 0.6)';
-  
+
   ctx.save();
   ctx.translate(cx, cy);
   if (facing < 0) ctx.scale(-1, 1);
 
-  const breath = Math.sin(t * 2.5 + charIdx) * S * 0.03;
-  const sway = Math.sin(t * 1.8 + charIdx) * S * 0.04;
+  const animScale = 0.6 + intensity * 0.8;
+  const breath = Math.sin(t * 2.5 + charIdx) * S * 0.03 * animScale;
+  const sway = Math.sin(t * 1.8 + charIdx) * S * 0.04 * animScale;
   const j = getJoints(action, emotion, t, S);
 
   ctx.save(); ctx.globalAlpha = 0.08; ctx.fillStyle = '#000';
