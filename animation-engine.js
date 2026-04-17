@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  ANIMATION ENGINE (V5 - SEAMLESS VIDEO & SHIN-CHAN LOGO)
+//  ANIMATION ENGINE (V5.1 - SLEEPING BEAR LOGO & SEAMLESS)
 // ═══════════════════════════════════════════════════════
 
 const DEVELOPER_API_KEY = "";
@@ -83,36 +83,71 @@ const loadBg = () => new Promise(res => {
 function drawBearLogo(ctx, x, y, size, t) {
   ctx.save();
   ctx.translate(x, y);
-  const wiggle = Math.sin(t * 2) * 0.05;
-  ctx.rotate(wiggle);
   
   const ol = '#000';
-  ctx.lineWidth = size * 0.05;
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
+  const breath = Math.sin(t * 1.5) * (size * 0.03); // 숨쉬는 효과
+  const wiggle = Math.sin(t * 1.5) * 0.03;
+
+  // 1. Pillow (베개)
+  ctx.fillStyle = '#3F3F5F';
+  ctx.strokeStyle = ol;
+  ctx.lineWidth = size * 0.04;
+  roundRect(ctx, -size*0.5, -size*0.35, size, size*0.5, size*0.1).fill();
+  ctx.stroke();
+
+  // 2. Bear Head (잠자는 곰돌이)
+  ctx.save();
+  ctx.translate(0, breath); // 머리 들썩임
+  ctx.rotate(wiggle);
 
   // Ears
   ctx.fillStyle = '#7A5C44';
-  ctx.strokeStyle = ol;
-  ctx.beginPath(); ctx.arc(-size*0.35, -size*0.2, size*0.22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(size*0.35, -size*0.2, size*0.22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-size*0.3, -size*0.2, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(size*0.3, -size*0.2, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
   // Head
-  ctx.beginPath(); ctx.ellipse(0, 0, size*0.6, size*0.5, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 0, size*0.5, size*0.42, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-  // Eyes
-  ctx.fillStyle = ol;
-  ctx.beginPath(); ctx.ellipse(-size*0.2, -size*0.05, size*0.05, size*0.08, 0, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(size*0.2, -size*0.05, size*0.05, size*0.08, 0, 0, Math.PI*2); ctx.fill();
+  // Closed Eyes (잠자는 눈)
+  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.04;
+  ctx.beginPath(); ctx.arc(-size*0.18, -size*0.02, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(size*0.18, -size*0.02, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
 
   // Nose
   ctx.fillStyle = '#4A3425';
-  ctx.beginPath(); ctx.ellipse(0, size*0.1, size*0.1, size*0.06, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, size*0.08, size*0.08, size*0.05, 0, 0, Math.PI*2); ctx.fill();
 
   // Blushes
-  ctx.fillStyle = 'rgba(255, 100, 100, 0.35)';
-  ctx.beginPath(); ctx.arc(-size*0.35, size*0.15, size*0.15, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(size*0.35, size*0.15, size*0.15, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255, 120, 120, 0.3)';
+  ctx.beginPath(); ctx.arc(-size*0.3, size*0.1, size*0.12, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(size*0.3, size*0.1, size*0.12, 0, Math.PI*2); ctx.fill();
+
+  // 3. ZZZ Animation (잠꼬대)
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `bold ${size*0.2}px Arial`;
+  for(let i=0; i<2; i++) {
+    const zt = (t + i*1.5) % 3;
+    const za = 1 - zt/3;
+    ctx.save();
+    ctx.globalAlpha = za;
+    ctx.translate(size*0.3 + zt*size*0.2, -size*0.4 - zt*size*0.3);
+    ctx.fillText('z', 0, 0);
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // 4. Blanket (이불)
+  const grad = ctx.createLinearGradient(-size*0.6, 0, size*0.6, size*0.5);
+  grad.addColorStop(0, '#C4A882'); grad.addColorStop(1, '#A68B6A');
+  ctx.fillStyle = grad;
+  ctx.save();
+  ctx.translate(0, breath * 0.5); // 이불도 살짝 들썩임
+  roundRect(ctx, -size*0.6, size*0.05, size*1.2, size*0.6, size*0.12).fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2;
+  ctx.stroke(); // 상단 라인 효과
+  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.04;
+  ctx.stroke();
+  ctx.restore();
 
   ctx.restore();
 }
@@ -214,7 +249,7 @@ async function startSceneSequence(canvas,text,artStyle){
       drawWeather(ctx, W, H, GY, scene.weather || 'clear', localT);
     } else {
       drawProps(ctx,W,H,GY,S,scene.props,charStates,artStyle,localT,scene.location);
-      drawWeather(ctx,W,H,GY,scene.weather||'clear',localT);
+      drawWeather(ctx, W, H, GY, scene.weather || 'clear', localT);
     }
     ctx.restore();
 
@@ -226,21 +261,21 @@ async function startSceneSequence(canvas,text,artStyle){
       ctx.restore();
     }
 
-    // 4. Logo Overlay (내 오늘의 일기 & 곰돌이)
+    // 4. Logo Overlay (내 오늘의 일기 & 잠자는 곰돌이)
     ctx.save();
-    const logoSize = S * 1.6; 
-    const logoY = H * 0.1;
+    const logoSize = S * 1.5; 
+    const logoY = H * 0.12;
     
-    // Draw Bear Logo
+    // Draw Sleeping Bear Logo
     drawBearLogo(ctx, W/2, logoY, logoSize, elapsed);
 
     // Draw Text Logo
     ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(0,0,0,0.4)';
     ctx.fillStyle = '#000'; ctx.strokeStyle = '#FFF'; ctx.lineWidth = 5;
-    ctx.font = 'bold 38px Noto Serif KR';
+    ctx.font = 'bold 36px Noto Serif KR';
     ctx.textAlign = 'center';
-    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize * 0.8);
-    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize * 0.8);
+    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize * 0.95);
+    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize * 0.95);
     ctx.restore();
 
     // 5. Frame (Black border)
