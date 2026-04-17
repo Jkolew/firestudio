@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  ANIMATION ENGINE (V5.1 - SLEEPING BEAR LOGO & SEAMLESS)
+//  ANIMATION ENGINE (V5.2 - LARGE CENTERED BRANDING)
 // ═══════════════════════════════════════════════════════
 
 const DEVELOPER_API_KEY = "";
@@ -85,69 +85,70 @@ function drawBearLogo(ctx, x, y, size, t) {
   ctx.translate(x, y);
   
   const ol = '#000';
-  const breath = Math.sin(t * 1.5) * (size * 0.03); // 숨쉬는 효과
-  const wiggle = Math.sin(t * 1.5) * 0.03;
+  const bw = size * 1.5; // 침대 너비
+  const bh = size * 0.9; // 침대 높이
+  const breath = Math.sin(t * 1.5) * (size * 0.04);
 
-  // 1. Pillow (베개)
-  ctx.fillStyle = '#3F3F5F';
+  // 1. Bed Frame (침대 사각형 틀)
+  ctx.fillStyle = '#2A2A3A';
   ctx.strokeStyle = ol;
-  ctx.lineWidth = size * 0.04;
-  roundRect(ctx, -size*0.5, -size*0.35, size, size*0.5, size*0.1).fill();
+  ctx.lineWidth = size * 0.05;
+  roundRect(ctx, -bw/2, -bh/2, bw, bh, size*0.15).fill();
   ctx.stroke();
 
-  // 2. Bear Head (잠자는 곰돌이)
-  ctx.save();
-  ctx.translate(0, breath); // 머리 들썩임
-  ctx.rotate(wiggle);
+  // 2. Pillow (베개 - 사각형에 맞게 배치)
+  ctx.fillStyle = '#3F3F5F';
+  roundRect(ctx, -bw/2 + size*0.1, -bh/2 + size*0.1, size*0.5, size*0.35, size*0.08).fill();
+  ctx.stroke();
 
+  // 3. Bear Head (잠자는 곰돌이)
+  ctx.save();
+  ctx.translate(-size*0.1, breath); // 호흡 애니메이션
+  
   // Ears
   ctx.fillStyle = '#7A5C44';
-  ctx.beginPath(); ctx.arc(-size*0.3, -size*0.2, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(size*0.3, -size*0.2, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-size*0.3, -size*0.15, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(size*0.1, -size*0.15, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-  // Head
-  ctx.beginPath(); ctx.ellipse(0, 0, size*0.5, size*0.42, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  // Face
+  ctx.beginPath(); ctx.ellipse(-size*0.1, 0, size*0.45, size*0.38, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
 
-  // Closed Eyes (잠자는 눈)
+  // Eyes (Closed)
   ctx.strokeStyle = ol; ctx.lineWidth = size * 0.04;
-  ctx.beginPath(); ctx.arc(-size*0.18, -size*0.02, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
-  ctx.beginPath(); ctx.arc(size*0.18, -size*0.02, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(-size*0.25, 0, size*0.07, 0.2, Math.PI-0.2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(size*0.05, 0, size*0.07, 0.2, Math.PI-0.2); ctx.stroke();
 
   // Nose
   ctx.fillStyle = '#4A3425';
-  ctx.beginPath(); ctx.ellipse(0, size*0.08, size*0.08, size*0.05, 0, 0, Math.PI*2); ctx.fill();
-
-  // Blushes
-  ctx.fillStyle = 'rgba(255, 120, 120, 0.3)';
-  ctx.beginPath(); ctx.arc(-size*0.3, size*0.1, size*0.12, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(size*0.3, size*0.1, size*0.12, 0, Math.PI*2); ctx.fill();
-
-  // 3. ZZZ Animation (잠꼬대)
-  ctx.fillStyle = '#C4A882';
-  ctx.font = `bold ${size*0.2}px Arial`;
-  for(let i=0; i<2; i++) {
-    const zt = (t + i*1.5) % 3;
-    const za = 1 - zt/3;
-    ctx.save();
-    ctx.globalAlpha = za;
-    ctx.translate(size*0.3 + zt*size*0.2, -size*0.4 - zt*size*0.3);
-    ctx.fillText('z', 0, 0);
-    ctx.restore();
-  }
+  ctx.beginPath(); ctx.ellipse(-size*0.1, size*0.08, size*0.08, size*0.05, 0, 0, Math.PI*2); ctx.fill();
+  
   ctx.restore();
 
-  // 4. Blanket (이불)
-  const grad = ctx.createLinearGradient(-size*0.6, 0, size*0.6, size*0.5);
+  // 4. Blanket (이불 - 침대 사각형 하단을 꽉 채움)
+  const grad = ctx.createLinearGradient(-bw/2, 0, bw/2, bh/2);
   grad.addColorStop(0, '#C4A882'); grad.addColorStop(1, '#A68B6A');
   ctx.fillStyle = grad;
   ctx.save();
-  ctx.translate(0, breath * 0.5); // 이불도 살짝 들썩임
-  roundRect(ctx, -size*0.6, size*0.05, size*1.2, size*0.6, size*0.12).fill();
-  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2;
-  ctx.stroke(); // 상단 라인 효과
-  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.04;
+  ctx.translate(0, breath * 0.4);
+  roundRect(ctx, -bw/2, size*0.05, bw, bh/2 + size*0.15, size*0.1).fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(-bw/2 + 5, size*0.05 + 5); ctx.lineTo(bw/2 - 5, size*0.05 + 5); ctx.stroke();
+  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.05;
   ctx.stroke();
   ctx.restore();
+
+  // 5. ZZZ Animation
+  ctx.fillStyle = '#C4A882';
+  ctx.font = `bold ${size*0.25}px Arial`;
+  for(let i=0; i<2; i++) {
+    const zt = (t + i*1.8) % 3.5;
+    const za = 1 - zt/3.5;
+    ctx.save();
+    ctx.globalAlpha = za;
+    ctx.translate(size*0.5 + zt*size*0.25, -size*0.4 - zt*size*0.4);
+    ctx.fillText('z', 0, 0);
+    ctx.restore();
+  }
 
   ctx.restore();
 }
@@ -261,21 +262,21 @@ async function startSceneSequence(canvas,text,artStyle){
       ctx.restore();
     }
 
-    // 4. Logo Overlay (내 오늘의 일기 & 잠자는 곰돌이)
+    // 4. Logo Overlay (BRANDING PERSISTENT)
     ctx.save();
-    const logoSize = S * 1.5; 
-    const logoY = H * 0.12;
+    const logoSize = S * 2.2; // 로고 크기 대폭 확대
+    const logoY = H * 0.16; // 위치를 중앙 쪽으로 조금 더 내림
     
-    // Draw Sleeping Bear Logo
+    // Draw Sleeping Bear (사각형 침대 틀 버전)
     drawBearLogo(ctx, W/2, logoY, logoSize, elapsed);
 
-    // Draw Text Logo
-    ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.fillStyle = '#000'; ctx.strokeStyle = '#FFF'; ctx.lineWidth = 5;
-    ctx.font = 'bold 36px Noto Serif KR';
+    // Draw Text Logo (큰 텍스트)
+    ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.fillStyle = '#000'; ctx.strokeStyle = '#FFF'; ctx.lineWidth = 6;
+    ctx.font = 'bold 46px Noto Serif KR';
     ctx.textAlign = 'center';
-    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize * 0.95);
-    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize * 0.95);
+    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize * 1.0);
+    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize * 1.0);
     ctx.restore();
 
     // 5. Frame (Black border)
