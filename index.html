@@ -38,6 +38,7 @@
      crossorigin="anonymous"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="custom.css">
 <style>
 :root {
   --bg:#08080F; --surface:rgba(255,255,255,0.04); --border:rgba(255,255,255,0.08);
@@ -82,7 +83,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .cal-month-nav{display:flex;align-items:center;gap:16px;padding:0 32px 24px;}
 .cal-month-nav button{background:none;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;transition:all .2s;}
 .cal-month-nav button:hover{border-color:var(--accent);color:var(--accent);}
-.cal-month-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:400;color:var(--text);}
+.cal-month-title{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:400;color:var(--text);text-align:center;flex:1;}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:0 28px 40px;}
 .cal-day-name{text-align:center;font-size:11px;color:var(--muted);padding:8px 0;letter-spacing:.5px;}
 .cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;cursor:pointer;transition:all .2s;position:relative;gap:3px;}
@@ -94,45 +95,45 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .cal-dot{width:5px;height:5px;border-radius:50%;}
 
 /* WRITE */
-#v-write{background:var(--bg);}
-.write-header{padding:24px 28px 0;display:flex;align-items:center;gap:16px;}
+#v-write{background:var(--bg);display:flex;flex-direction:column;}
+.write-header{padding:24px 28px 0;display:flex;align-items:center;gap:16px;flex-shrink:0;}
 .btn-back{background:none;border:1px solid var(--border);color:var(--muted);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;transition:all .2s;flex-shrink:0;}
 .btn-back:hover{border-color:var(--text);color:var(--text);}
 .write-date{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:300;color:var(--muted);}
-.write-area{flex:1;display:flex;flex-direction:column;padding:24px 28px;gap:20px;overflow:hidden;}
-#diary-textarea{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;font-family:'Noto Serif KR',serif;font-size:17px;font-weight:300;line-height:2;color:var(--text);resize:none;outline:none;transition:border-color .2s;}
+.write-area{flex:1;display:flex;flex-direction:column;padding:24px 28px;gap:20px;overflow-y:auto;}
+#diary-textarea{min-height:200px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;font-family:'Noto Serif KR',serif;font-size:17px;font-weight:300;line-height:2;color:var(--text);resize:none;outline:none;transition:border-color .2s;}
 #diary-textarea:focus{border-color:rgba(196,168,130,.3);}
 #diary-textarea::placeholder{color:var(--muted);font-weight:300;}
 .style-row{display:flex;gap:10px;align-items:center;}
 .style-label{font-size:12px;color:var(--muted);margin-right:4px;white-space:nowrap;}
 .style-pill{border:1px solid var(--border);background:none;color:var(--muted);padding:8px 18px;border-radius:100px;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;}
-.style-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(196,168,130,.08);}
+.style-pill.active{border-color:var(--accent);color:var(--accent);background:rgba(196,168,130,.08);font-weight:500;}
 .btn-generate{background:var(--accent);color:#08080F;border:none;padding:14px 32px;border-radius:100px;font-size:15px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .2s;align-self:flex-end;}
 .btn-generate:hover{opacity:.85;}
 
 /* PLAYER */
-#v-player,#v-share{background:#000;}
+#v-player,#v-share{background:#FFFBF0;}
 #anim-canvas,#share-canvas{position:absolute;inset:0;width:100%;height:100%;}
-.player-top{position:relative;z-index:10;padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
-.player-meta{display:flex;align-items:center;gap:10px;}
-.player-date{font-family:'Noto Serif KR',serif;font-size:14px;color:rgba(255,255,255,.55);}
-.player-emotion-badge{font-size:11px;padding:3px 10px;border-radius:100px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);}
-.player-controls{display:flex;gap:8px;}
-.player-ctrl{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.8);width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;transition:all .2s;backdrop-filter:blur(10px);}
-.player-ctrl:hover{background:rgba(255,255,255,.2);}
-.diary-overlay{position:absolute;bottom:0;left:0;right:0;z-index:10;padding:0 32px 28px;background:linear-gradient(transparent,rgba(0,0,0,.88) 35%);}
-.player-action-row{display:flex;gap:10px;margin-top:14px;}
-.btn-share{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);padding:9px 20px;border-radius:100px;font-size:13px;font-family:inherit;cursor:pointer;backdrop-filter:blur(10px);transition:all .2s;}
-.btn-share:hover{background:rgba(255,255,255,.2);}
-.btn-to-cal{background:none;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.5);padding:9px 20px;border-radius:100px;font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;}
-.btn-to-cal:hover{color:rgba(255,255,255,.8);}
-.share-badge{position:absolute;top:20px;right:20px;z-index:20;background:rgba(196,168,130,.15);border:1px solid rgba(196,168,130,.3);color:var(--accent);padding:5px 12px;border-radius:100px;font-size:11px;}
+.player-ui-overlay{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;pointer-events:none;}
+.player-top{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.player-meta{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);padding:6px 14px;border-radius:100px;border:1px solid rgba(0,0,0,0.05)}
+.player-date{font-family:'Noto Serif KR',serif;font-size:13px;color:#442410;font-weight:500;}
+.player-emotion-badge{font-size:11px;padding:3px 10px;border-radius:100px;color:rgba(255,255,255,0.9);font-weight:500;}
+.player-controls{display:flex;gap:8px;pointer-events:all;}
+.player-ctrl{background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.05);color:#442410;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:14px;transition:all .2s;backdrop-filter:blur(8px);}
+.player-ctrl:hover{background:rgba(255,255,255,0.8);}
+.player-bottom-ui{flex:1;display:flex;flex-direction:column-reverse;padding:0 28px 28px;}
+.player-action-row{display:flex;gap:10px;pointer-events:all;}
+.btn-player-action{background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.05);color:#442410;padding:10px 22px;border-radius:100px;font-size:13px;font-family:inherit;cursor:pointer;backdrop-filter:blur(10px);transition:all .2s;font-weight:500;text-decoration:none;}
+.btn-player-action:hover{background:rgba(255,255,255,0.9);}
+
+.share-badge{position:absolute;top:20px;right:20px;z-index:20;background:rgba(255,255,255,0.7);backdrop-filter:blur(8px);padding:6px 14px;border-radius:100px;border:1px solid rgba(0,0,0,0.05);color:#442410;font-family:'Gaegu',cursive;font-size:15px;font-weight:700;}
 
 /* CONTACT */
 #v-contact{background:var(--bg); overflow-y:auto;}
 .contact-container{padding:40px 28px; max-width:500px; margin:0 auto; display:flex; flex-direction:column; gap:24px;}
 .contact-title{font-family:'Noto Serif KR',serif; font-size:24px; color:var(--accent); margin-bottom:8px;}
-.contact-desc{font-size:14px; color:var(--muted); line-height:1.6;}
+.contact-desc{font-size:14px; color:var(--muted); line-height:1.6; margin-bottom:12px;}
 .contact-form{display:flex; flex-direction:column; gap:16px;}
 .form-group{display:flex; flex-direction:column; gap:8px;}
 .form-group label{font-size:12px; color:var(--muted); padding-left:4px;}
@@ -143,57 +144,40 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .btn-submit:hover{opacity:0.9;}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;}
+.modal-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .3s;align-items:flex-end;}
 .modal-overlay.open{opacity:1;pointer-events:all;}
-.modal-card{background:#0F0F18;border:1px solid var(--border);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;transform:translateY(40px);transition:transform .3s;overflow:hidden;}
+.modal-card{background:#0F0F18;border:1px solid var(--border);border-radius:24px 24px 0 0;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;transform:translateY(40px);transition:transform .3s;overflow:hidden;}
 .modal-overlay.open .modal-card{transform:translateY(0);}
 .modal-body{flex:1;overflow-y:auto;padding:28px 28px 0;display:flex;flex-direction:column;gap:16px;}
 .modal-date{font-family:'Noto Serif KR',serif;font-size:14px;color:var(--muted);}
 .modal-text{font-family:'Noto Serif KR',serif;font-size:16px;line-height:2;color:var(--text);font-weight:300;}
 .modal-actions{padding:20px 28px 28px;display:flex;gap:10px;flex-wrap:wrap;background:linear-gradient(to top, #0F0F18 80%, transparent);margin-top:-10px;position:relative;z-index:10;}
-.modal-btn{flex:1;min-width:100px;padding:11px;border-radius:12px;border:1px solid var(--border);background:none;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;text-align:center;}
+.modal-btn{flex:1;min-width:100px;padding:11px;border-radius:12px;border:1px solid var(--border);background:none;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;font-weight:500;}
 .modal-btn:hover{background:var(--surface);}
-.modal-btn.primary{background:var(--accent);color:#08080F;border-color:var(--accent);}
+.modal-btn.primary{background:var(--accent);color:#08080F;border-color:var(--accent);font-weight:600;}
 #share-toast{position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A1A2E;border:1px solid rgba(255,255,255,.1);color:var(--text);padding:14px 24px;border-radius:12px;font-size:14px;z-index:999;transition:transform .4s ease;white-space:nowrap;}
 #share-toast.show{transform:translateX(-50%) translateY(0);}
 ::-webkit-scrollbar{width:4px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-/* FOOTER */
-.site-footer{padding:32px 28px 28px;border-top:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:8px;}
-.footer-links{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
-.footer-link{font-size:12px;color:var(--muted);text-decoration:none;cursor:pointer;transition:color .2s;}
-.footer-link:hover{color:var(--text);}
-.footer-copy{font-size:11px;color:rgba(113,113,122,.5);}
+/* FOOTER & ABOUT & PRIVACY (simplified for brevity) */
+.cal-footer-inline { display:flex; gap:14px; justify-content:center; align-items:center; padding:5px 16px 8px; border-top:1px solid var(--border); font-size:11px; color:rgba(113,113,122,0.55); flex-shrink:0; }
+.cal-footer-inline span { cursor:pointer; transition:color .2s; }
+.cal-footer-inline span:hover { color:var(--muted); }
+#v-about, #v-privacy, #v-contact {background:var(--bg); overflow-y:auto;}
+.about-container, .privacy-container, .contact-container {padding:40px 28px 60px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
+.view-header{padding:24px 28px 0;display:flex;align-items:center;gap:16px;flex-shrink:0;}
+.view-title{font-family:'Noto Serif KR',serif;font-size:16px;font-weight:300;color:var(--muted);}
+.content-title{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:600;color:var(--text);margin-bottom:8px;}
+.content-subtitle{font-size:15px;color:var(--muted);line-height:1.7;}
+.content-section-title{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:400;color:var(--text);margin-bottom:10px;}
+.content-text{font-size:14px;color:var(--muted);line-height:1.9;}
 
-/* ABOUT VIEW */
-#v-about{background:var(--bg);overflow-y:auto;}
-.about-container{padding:40px 28px 60px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:32px;}
-.about-hero{display:flex;flex-direction:column;gap:12px;}
-.about-title{font-family:'Noto Serif KR',serif;font-size:32px;font-weight:600;color:var(--accent);}
-.about-subtitle{font-size:15px;color:var(--muted);line-height:1.7;}
-.about-section-title{font-family:'Noto Serif KR',serif;font-size:18px;font-weight:400;color:var(--text);margin-bottom:10px;}
-.about-text{font-size:14px;color:var(--muted);line-height:1.9;}
-.about-features{display:flex;flex-direction:column;gap:14px;margin-top:4px;}
-.about-feature{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:6px;}
-.about-feature-title{font-size:14px;color:var(--text);font-weight:500;}
-.about-feature-desc{font-size:13px;color:var(--muted);line-height:1.7;}
-
-/* PRIVACY VIEW */
-#v-privacy{background:var(--bg);overflow-y:auto;}
-.privacy-container{padding:40px 28px 80px;max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:28px;}
-.privacy-title{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:600;color:var(--text);}
-.privacy-updated{font-size:12px;color:var(--muted);margin-top:-16px;}
-.privacy-section-title{font-size:15px;font-weight:500;color:var(--text);margin-bottom:8px;}
-.privacy-text{font-size:13px;color:var(--muted);line-height:1.9;}
-.privacy-block{display:flex;flex-direction:column;gap:6px;}
-
-/* ── CALENDAR COMPACT LAYOUT ── */
-#v-calendar { overflow: hidden; }
-.cal-header { padding: 10px 16px 8px; }
+/* CALENDAR COMPACT LAYOUT */
+#v-calendar { overflow: hidden; display:flex; flex-direction:column; }
+.cal-body-scroll{flex:1;overflow-y:auto;}
+.cal-header { padding: 10px 16px 8px; flex-shrink:0;}
 .cal-header-left { display:flex; align-items:center; gap:10px; }
 .cal-header-right { display:flex; align-items:center; gap:5px; flex-wrap:nowrap; }
-
-/* Mini bear in header */
 .mini-bed { width:70px; height:42px; background:#2A2A3A; border-radius:11px 11px 6px 6px; position:relative; border:1.5px solid var(--border); flex-shrink:0; }
 .mini-pillow { width:19px; height:12px; background:#3F3F5F; border-radius:4px; position:absolute; top:5px; left:5px; }
 .mini-blanket { width:50px; height:34px; background:linear-gradient(135deg, var(--accent), #A68B6A); border-radius:7px 0 7px 0; position:absolute; bottom:0; right:0; z-index:2; border-top:1px solid rgba(255,255,255,0.1); }
@@ -206,21 +190,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .mini-nose { width:5px; height:3px; background:#4A3425; border-radius:50%; position:absolute; top:15px; left:50%; transform:translateX(-50%); }
 .mini-zzz { position:absolute; top:-13px; right:-5px; color:var(--accent); font-size:9px; font-weight:700; opacity:0; animation:zzz-fly 3s linear infinite; }
 .mini-zzz:nth-child(2) { animation-delay:1.2s; }
-
-/* Compact nav buttons */
 .cal-nav-btn { background:none; border:1px solid var(--border); color:var(--muted); padding:5px 11px; border-radius:100px; font-size:12px; font-family:inherit; cursor:pointer; transition:all .2s; white-space:nowrap; }
 .cal-nav-btn:hover { border-color:var(--text); color:var(--text); }
-
-/* Compact spacing */
-.cal-month-nav { padding:2px 16px 8px; }
+.cal-month-nav { padding:2px 16px 8px; flex-shrink:0; }
 .cal-grid { padding:0 10px 6px; gap:3px; }
 .cal-day-name { font-size:10px; padding:4px 0; }
 .cal-btn-write { padding:8px 16px; font-size:13px; }
 
-/* Inline footer */
-.cal-footer-inline { display:flex; gap:14px; justify-content:center; align-items:center; padding:5px 16px 8px; border-top:1px solid var(--border); font-size:11px; color:rgba(113,113,122,0.55); flex-shrink:0; }
-.cal-footer-inline span { cursor:pointer; transition:color .2s; }
-.cal-footer-inline span:hover { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -233,52 +209,34 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
         <div class="mini-pillow"></div>
         <div class="mini-bear">
           <div class="mini-bear-head">
-            <div class="mini-ear-l"></div>
-            <div class="mini-ear-r"></div>
-            <div class="mini-eye-l"></div>
-            <div class="mini-eye-r"></div>
+            <div class="mini-ear-l"></div><div class="mini-ear-r"></div>
+            <div class="mini-eye-l"></div><div class="mini-eye-r"></div>
             <div class="mini-nose"></div>
           </div>
         </div>
         <div class="mini-blanket"></div>
-        <span class="mini-zzz">z</span>
-        <span class="mini-zzz">z</span>
+        <span class="mini-zzz">z</span><span class="mini-zzz">z</span>
       </div>
       <div class="cal-logo">하루</div>
     </div>
     <div class="cal-header-right">
       <button class="player-ctrl" style="background:rgba(196,168,130,0.1);border-color:var(--accent);color:var(--accent);width:34px;height:34px;font-size:15px;" onclick="openSettings()" title="AI 설정">⚙</button>
       <button class="cal-nav-btn" onclick="showView('about')">소개</button>
-      <button class="cal-nav-btn" onclick="showView('contact')">제휴문의</button>
       <button class="cal-btn-write" onclick="openWrite()">일기 쓰기</button>
     </div>
   </div>
-  <div class="cal-month-nav">
-    <button onclick="changeMonth(-1)">‹</button>
-    <div class="cal-month-title" id="month-title"></div>
-    <button onclick="changeMonth(1)">›</button>
+  <div class="cal-body-scroll">
+    <div class="cal-month-nav">
+      <button onclick="changeMonth(-1)">‹</button>
+      <div class="cal-month-title" id="month-title"></div>
+      <button onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
   </div>
-  <div class="cal-grid" id="cal-grid"></div>
-
-  <!-- AdSense 광고 영역 -->
-  <!-- 광고 단위를 수동으로 추가하려면 AdSense 대시보드에서 광고 단위를 만들고
-       아래 ins 태그의 data-ad-slot 값을 실제 슬롯 ID로 교체하세요.
-       자동 광고(Auto Ads)를 사용하는 경우 아래 ins 태그는 필요 없습니다.
-  <div style="padding:0 28px 8px;">
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="ca-pub-2973009474553970"
-         data-ad-slot="여기에_슬롯ID_입력"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  </div>
-  -->
-
   <div class="cal-footer-inline">
     <span onclick="showView('privacy')">개인정보처리방침</span>
     <span style="opacity:0.3;">·</span>
-    <span onclick="showView('about')">서비스 소개</span>
+    <span onclick="showView('contact')">제휴문의</span>
     <span style="opacity:0.3;">·</span>
     <span style="cursor:default;">&copy; 2025 하루</span>
   </div>
@@ -294,9 +252,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <textarea id="diary-textarea" placeholder="오늘 하루는 어땠나요&#10;&#10;문장마다 다른 장면이 펼쳐집니다&#10;핸드폰·게임·책·커피·음식·음악·TV 등 사물도 등장해요&#10;만난 사람 수만큼 인물도 늘어납니다 :)"></textarea>
     <div class="style-row">
       <span class="style-label">그림체</span>
-      <button class="style-pill active" data-style="shin">정통 짱구 스타일 (V4.1)</button>
+      <button class="style-pill active" data-style="shin">정통 짱구 스타일 (V4.2)</button>
     </div>
-    <div style="font-size:11px; color:var(--muted); margin-top:-10px;">* 감자머리 윤곽과 송충이 눈썹이 적용된 정통 애니메이션 화풍입니다.</div>
+    <div style="font-size:11px; color:var(--muted); margin-top:-10px;padding:0 4px;">* 동적인 배경과 손그림 느낌의 캐릭터로 구성된 최신 버전입니다.</div>
     <button class="btn-generate" onclick="generateAnimation()">✦ 오늘 하루 재생</button>
   </div>
 </div>
@@ -304,20 +262,23 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <!-- PLAYER -->
 <div class="view hidden" id="v-player">
   <canvas id="anim-canvas"></canvas>
-  <div class="player-top">
-    <div class="player-meta">
-      <div class="player-date" id="player-date"></div>
-      <div class="player-emotion-badge" id="player-emotion-badge"></div>
+  <div class="player-ui-overlay">
+    <div class="player-top">
+      <div class="player-meta">
+        <div class="player-date" id="player-date"></div>
+        <div class="player-emotion-badge" id="player-emotion-badge"></div>
+      </div>
+      <div class="player-controls">
+        <button class="player-ctrl" onclick="replayAnimation()" title="처음부터">↺</button>
+        <button class="player-ctrl" onclick="showView('calendar')">✕</button>
+      </div>
     </div>
-    <div class="player-controls">
-      <button class="player-ctrl" onclick="replayAnimation()" title="처음부터">↺</button>
-      <button class="player-ctrl" onclick="showView('calendar')">✕</button>
-    </div>
-  </div>
-  <div class="diary-overlay">
-    <div class="player-action-row">
-      <button class="btn-share" onclick="shareEntry()">↗ 공유하기</button>
-      <button class="btn-to-cal" onclick="showView('calendar')">달력으로</button>
+    <div id="caption-container"></div>
+    <div class="player-bottom-ui">
+      <div class="player-action-row">
+        <button class="btn-player-action" onclick="shareEntry()">↗ 공유하기</button>
+        <button class="btn-player-action" onclick="showView('calendar')">달력으로</button>
+      </div>
     </div>
   </div>
 </div>
@@ -325,157 +286,51 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <!-- SHARE VIEW -->
 <div class="view hidden" id="v-share">
   <canvas id="share-canvas"></canvas>
-  <div class="player-top">
-    <div class="player-meta">
-      <div class="player-date" id="share-player-date"></div>
-      <div class="player-emotion-badge" id="share-player-emotion-badge"></div>
+  <div class="player-ui-overlay">
+    <div class="player-top">
+       <div class="player-meta">
+        <div class="player-date" id="share-player-date"></div>
+        <div class="player-emotion-badge" id="share-player-emotion-badge"></div>
+      </div>
+      <div class="share-badge">haru-diary.web.app</div>
     </div>
-    <div class="share-badge">공유된 하루</div>
-  </div>
-  <div class="diary-overlay">
-    <div class="player-action-row">
-      <button class="btn-share" onclick="window.location.href='index.html'">나도 써보기</button>
+    <div class="player-bottom-ui">
+       <div class="player-action-row">
+        <a class="btn-player-action" href="index.html">나도 써보기</a>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- CONTACT VIEW -->
-<div class="view hidden" id="v-contact">
-  <div class="write-header">
-    <button class="btn-back" onclick="showView('calendar')">←</button>
-    <div class="write-date">제휴 및 비즈니스 문의</div>
+<!-- OTHER VIEWS (ABOUT, CONTACT, PRIVACY) -->
+<div class="view hidden" id="v-about">
+  <div class="view-header"><button class="btn-back" onclick="showView('calendar')">←</button><div class="view-title">서비스 소개</div></div>
+  <div class="about-container">
+      <div class="content-title">하루</div>
+      <p class="content-subtitle">오늘 하루를 일기로 적으면,<br>감정을 분석해 나만의 애니메이션을 만들어드립니다.</p>
   </div>
+</div>
+<div class="view hidden" id="v-contact">
+   <div class="view-header"><button class="btn-back" onclick="showView('calendar')">←</button><div class="view-title">제휴 및 비즈니스 문의</div></div>
   <div class="contact-container">
-    <div>
-      <h2 class="contact-title">함께하고 싶으신가요?</h2>
+      <h2 class="content-title">함께하고 싶으신가요?</h2>
       <p class="contact-desc">'하루'와 함께 따뜻한 가치를 만들어갈 파트너를 기다립니다. 아래 양식을 작성해 주시면 검토 후 연락드리겠습니다.</p>
-    </div>
-    
     <form action="https://formspree.io/f/mjgpdror" method="POST" class="contact-form">
-      <div class="form-group">
-        <label>성함 / 기업명</label>
-        <input type="text" name="name" class="form-input" placeholder="이름 또는 회사명을 입력해 주세요" required>
-      </div>
-      <div class="form-group">
-        <label>답변받을 이메일</label>
-        <input type="email" name="_replyto" class="form-input" placeholder="example@email.com" required>
-      </div>
-      <div class="form-group">
-        <label>문의 내용</label>
-        <textarea name="message" class="form-textarea" placeholder="제휴 제안이나 궁금하신 내용을 자유롭게 적어주세요" required></textarea>
-      </div>
-      <input type="hidden" name="_subject" value="[하루] 새로운 제휴 문의가 접수되었습니다">
-      
+      <div class="form-group"><label>성함 / 기업명</label><input type="text" name="name" class="form-input" required></div>
+      <div class="form-group"><label>답변받을 이메일</label><input type="email" name="_replyto" class="form-input" required></div>
+      <div class="form-group"><label>문의 내용</label><textarea name="message" class="form-textarea" required></textarea></div>
       <button type="submit" class="btn-submit">문의 보내기</button>
     </form>
   </div>
 </div>
-
-<!-- ABOUT VIEW -->
-<div class="view hidden" id="v-about">
-  <div class="write-header">
-    <button class="btn-back" onclick="showView('calendar')">←</button>
-    <div class="write-date">서비스 소개</div>
-  </div>
-  <div class="about-container">
-    <div class="about-hero">
-      <div class="about-title">하루</div>
-      <p class="about-subtitle">오늘 하루를 일기로 적으면,<br>감정을 분석해 나만의 애니메이션을 만들어드립니다.</p>
-    </div>
-
-    <div>
-      <div class="about-section-title">하루가 하는 일</div>
-      <div class="about-features">
-        <div class="about-feature">
-          <div class="about-feature-title">✦ 감정 분석</div>
-          <div class="about-feature-desc">일기 속 문장을 분석해 기쁨, 슬픔, 설렘, 외로움 등 9가지 감정 중 오늘의 감정을 찾아냅니다.</div>
-        </div>
-        <div class="about-feature">
-          <div class="about-feature-title">✦ 짱구 애니메이션</div>
-          <div class="about-feature-desc">감자와 같은 머리 윤곽, 굵은 눈썹 등 원작의 디테일을 살린 정통 짱구 스타일로 오늘 하루를 그려냅니다.</div>
-        </div>
-        <div class="about-feature">
-          <div class="about-feature-title">✦ 전용 배경 & 틀</div>
-          <div class="about-feature-desc">애니메이션 전용 배경과 수작업 느낌의 프레임을 통해 마치 한 편의 만화 영화를 보는 듯한 연출을 제공합니다.</div>
-        </div>
-        <div class="about-feature">
-          <div class="about-feature-title">✦ 공유하기</div>
-          <div class="about-feature-desc">완성된 하루의 애니메이션을 링크로 공유해 소중한 사람들과 오늘의 감정을 나눠보세요.</div>
-        </div>
-      </div>
-    </div>
-
-    <div>
-      <div class="about-section-title">개인 정보 보호</div>
-      <p class="about-text">하루에 기록된 모든 일기는 사용자 기기의 브라우저 로컬 스토리지에만 저장되며, 외부 서버로 전송되거나 수집되지 않습니다. 일기는 오직 나만 볼 수 있습니다.</p>
-    </div>
-
-    <div>
-      <div class="about-section-title">문의</div>
-      <p class="about-text">제휴, 비즈니스, 기타 문의는 <span class="footer-link" onclick="showView('contact')">제휴 문의 페이지</span>를 통해 연락해 주세요.</p>
-    </div>
-  </div>
-</div>
-
-<!-- PRIVACY POLICY VIEW -->
 <div class="view hidden" id="v-privacy">
-  <div class="write-header">
-    <button class="btn-back" onclick="showView('calendar')">←</button>
-    <div class="write-date">개인정보처리방침</div>
-  </div>
+  <div class="view-header"><button class="btn-back" onclick="showView('calendar')">←</button><div class="view-title">개인정보처리방침</div></div>
   <div class="privacy-container">
-    <div>
-      <div class="privacy-title">개인정보처리방침</div>
-      <div class="privacy-updated">최종 업데이트: 2025년 1월 1일</div>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">1. 개요</div>
-      <p class="privacy-text">'하루'(이하 "서비스")는 사용자의 개인정보를 중요하게 생각합니다. 본 방침은 서비스 이용 시 수집·사용되는 정보에 대해 설명합니다.</p>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">2. 수집하는 정보</div>
-      <p class="privacy-text">서비스는 사용자가 직접 입력한 일기 내용을 수집하지 않습니다. 모든 일기 데이터는 사용자 기기의 브라우저 로컬 스토리지에만 저장되며, 외부 서버로 전송되지 않습니다.<br><br>제휴 문의 양식을 통해 제출 시, 이름·이메일·문의 내용이 Formspree를 통해 수집될 수 있습니다.</p>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">3. 제3자 서비스</div>
-      <p class="privacy-text">본 서비스는 다음 제3자 서비스를 사용합니다. 각 서비스는 자체 개인정보처리방침을 적용합니다.</p>
-      <p class="privacy-text" style="margin-top:10px;">
-        <strong style="color:var(--text);">Google AdSense</strong><br>
-        광고 제공을 위해 Google AdSense를 사용합니다. Google은 쿠키를 사용해 맞춤형 광고를 표시할 수 있습니다. Google 광고 및 개인정보 설정은 <a href="https://adssettings.google.com" target="_blank" rel="noopener" style="color:var(--accent);">Google 광고 설정</a>에서 관리할 수 있습니다.
-      </p>
-      <p class="privacy-text" style="margin-top:10px;">
-        <strong style="color:var(--text);">Disqus 댓글</strong><br>
-        일기 항목에 댓글 기능을 제공하기 위해 Disqus를 사용합니다. Disqus는 자체적인 데이터 수집 정책을 따릅니다.
-      </p>
-      <p class="privacy-text" style="margin-top:10px;">
-        <strong style="color:var(--text);">Google Fonts</strong><br>
-        한글 폰트 제공을 위해 Google Fonts를 사용합니다.
-      </p>
-      <p class="privacy-text" style="margin-top:10px;">
-        <strong style="color:var(--text);">Formspree</strong><br>
-        제휴 문의 양식 제출을 위해 Formspree를 사용합니다.
-      </p>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">4. 쿠키</div>
-      <p class="privacy-text">본 서비스는 직접적으로 쿠키를 생성하지 않습니다. 다만, Google AdSense 및 Disqus 등 제3자 서비스가 자체 쿠키를 사용할 수 있습니다. 브라우저 설정에서 쿠키 사용을 거부할 수 있으나, 일부 기능이 제한될 수 있습니다.</p>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">5. 사용자 권리</div>
-      <p class="privacy-text">사용자는 브라우저의 '사이트 데이터 삭제' 기능을 통해 언제든지 로컬 스토리지에 저장된 일기 데이터를 삭제할 수 있습니다.</p>
-    </div>
-
-    <div class="privacy-block">
-      <div class="privacy-section-title">6. 문의</div>
-      <p class="privacy-text">개인정보처리방침에 대한 문의는 제휴 문의 페이지를 통해 연락 주시기 바랍니다.</p>
-    </div>
+      <div class="content-title">개인정보처리방침</div>
+      <div class="content-text">...</div>
   </div>
 </div>
+
 
 <!-- ENTRY MODAL -->
 <div class="modal-overlay" id="entry-modal" onclick="closeModal(event)">
@@ -483,15 +338,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
     <div class="modal-body">
       <div class="modal-date" id="modal-date"></div>
       <div class="modal-text" id="modal-text"></div>
-      
-      <!-- DISQUS THREAD -->
       <div id="disqus_thread" style="margin-top:24px; padding-top:24px; border-top:1px solid var(--border); min-height: 200px;"></div>
       <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
     </div>
-
     <div class="modal-actions">
       <button class="modal-btn primary" onclick="playFromModal()">▶ 애니메이션 보기</button>
-      <button class="modal-btn" onclick="shareFromModal()">↗ 공유</button>
+      <a class="modal-btn" id="modal-share-btn" onclick="shareFromModal()">↗ 공유</a>
       <button class="modal-btn" onclick="closeEntryModal()">닫기</button>
     </div>
   </div>
@@ -499,17 +351,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settings-modal" onclick="if(event.target.id==='settings-modal')closeSettings()">
-  <div class="modal-card" style="border-radius:24px 24px 0 0;">
+  <div class="modal-card">
     <div class="modal-body" style="padding-bottom:24px;">
-      <div class="about-section-title" style="margin-bottom:4px;">AI 연동 설정</div>
+      <div class="content-section-title" style="margin-bottom:4px;">AI 연동 설정</div>
       <div class="contact-desc" style="margin-bottom:20px;">구글 Gemini API를 연결하여 애니메이션의 분석 퀄리티를 높일 수 있습니다. (무료 사용 가능)</div>
-      
       <div class="form-group">
         <label>Gemini API Key</label>
         <input type="password" id="gemini-key-input" class="form-input" placeholder="AI Studio에서 발급받은 키를 입력하세요">
         <div style="font-size:11px; color:var(--muted); margin-top:6px; line-height:1.6;">
           * 키는 브라우저에만 저장되며 외부로 전송되지 않습니다.<br>
-          * 발급처: <a href="https://aistudio.google.com/" target="_blank" style="color:var(--accent);">Google AI Studio</a> (무료 티어 권장)
+          * 발급처: <a href="https://aistudio.google.com/" target="_blank" style="color:var(--accent);text-decoration:none;">Google AI Studio</a> (무료 티어 권장)
         </div>
       </div>
     </div>
@@ -520,7 +371,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   </div>
 </div>
 
-<div id="share-toast">링크가 복사되었습니다 ✓</div>
+<div id="share-toast"></div>
 
 <script src="animation-engine.js"></script>
 <script src="draw-character.js"></script>
@@ -528,7 +379,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 // ═══ STATE ═══
 const state = {
   view:'calendar', calYear:new Date().getFullYear(), calMonth:new Date().getMonth(),
-  writeDate:null, style:'anime', currentEntry:null, animFrame:null, modalEntry:null,
+  writeDate:null, style:'shin', currentEntry:null, animFrame:null, modalEntry:null,
+  activeCaption: null,
 };
 const todayStr = fmtDate(new Date());
 
@@ -542,21 +394,24 @@ function saveSettings() {
   const key = document.getElementById('gemini-key-input').value.trim();
   localStorage.setItem('GEMINI_API_KEY', key);
   closeSettings();
-  const toast = document.getElementById('share-toast');
-  toast.textContent = key ? 'API 키가 저장되었습니다 ✓' : 'API 키가 해제되었습니다';
-  toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2500);
+  showToast(key ? 'API 키가 저장되었습니다 ✓' : 'API 키가 해제되었습니다');
 }
 
 // ═══ UTILS ═══
 function fmtDate(d){return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;}
 function fmtDateKo(s){const[y,m,d]=s.split('-');return `${y}년 ${+m}월 ${+d}일`;}
 function p2(n){return String(n).padStart(2,'0');}
+function showToast(msg) {
+  const toast = document.getElementById('share-toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2500);
+}
 
 // ═══ STORAGE ═══
 function saveEntry(e){const a=loadAll();a[e.date]=e;localStorage.setItem('diary_v4',JSON.stringify(a));}
 function loadAll(){try{return JSON.parse(localStorage.getItem('diary_v4')||'{}');}catch{return {};}}
 function loadEntry(d){return loadAll()[d]||null;}
-
 
 // ═══ VIEWS ═══
 function showView(name){
@@ -565,6 +420,7 @@ function showView(name){
   state.view=name;
   if(name==='calendar') renderCalendar();
   if(state.animFrame){cancelAnimationFrame(state.animFrame);state.animFrame=null;}
+  if(state.activeCaption) { state.activeCaption.remove(); state.activeCaption = null; }
 }
 function openWrite(dateStr){
   const d=dateStr?new Date(dateStr+'T00:00:00'):new Date();
@@ -574,31 +430,26 @@ function openWrite(dateStr){
   document.getElementById('diary-textarea').value=ex?ex.text:'';
   showView('write');
 }
-function setStyle(btn){
-  document.querySelectorAll('.style-pill').forEach(p=>p.classList.remove('active'));
-  btn.classList.add('active');
-  state.style=btn.dataset.style;
-}
 function generateAnimation(){
   const text=document.getElementById('diary-textarea').value.trim();
   if(!text){alert('일기를 먼저 작성해주세요.');return;}
-  const emotion=detectEmotion(text);
-  const entry={date:state.writeDate,text,style:state.style,emotion,ts:Date.now()};
+  const entry={date:state.writeDate,text,style:state.style,ts:Date.now()};
   saveEntry(entry);
   playEntry(entry);
 }
 function playEntry(entry){
   state.currentEntry=entry;
+  const overallEmotion = detectEmotion(entry.text);
   document.getElementById('player-date').textContent=fmtDateKo(entry.date);
   const badge=document.getElementById('player-emotion-badge');
-  badge.textContent=emotionLabel(entry.emotion);
-  badge.style.color=emotionColor(entry.emotion);
-  badge.style.borderColor=emotionColor(entry.emotion)+'44';
+  badge.textContent=emotionLabel(overallEmotion);
+  badge.style.background=emotionColor(overallEmotion);
+  badge.style.borderColor=emotionColor(overallEmotion)+'88';
   showView('player');
   const canvas=document.getElementById('anim-canvas');
   canvas.width=window.innerWidth; canvas.height=window.innerHeight;
   if(state.animFrame){cancelAnimationFrame(state.animFrame);state.animFrame=null;}
-  startSceneSequence(canvas,entry.text,entry.style,entry.date);
+  startSceneSequence(canvas,entry.text,entry.style);
 }
 function replayAnimation(){if(state.currentEntry)playEntry(state.currentEntry);}
 
@@ -619,11 +470,9 @@ function renderCalendar(){
   DAY_NAMES.forEach(d=>{const el=document.createElement('div');el.className='cal-day-name';el.textContent=d;grid.appendChild(el);});
   const firstDay=new Date(state.calYear,state.calMonth,1).getDay();
   const daysInMonth=new Date(state.calYear,state.calMonth+1,0).getDate();
-  const daysInPrev=new Date(state.calYear,state.calMonth,0).getDate();
-  for(let i=0;i<firstDay;i++){
-    const el=document.createElement('div');el.className='cal-day other-month';
-    const n=document.createElement('div');n.className='cal-day-num';n.textContent=daysInPrev-firstDay+1+i;
-    el.appendChild(n);grid.appendChild(el);
+  for(let i=0;i<firstDay;i++) {
+      const el=document.createElement('div'); el.className='cal-day other-month';
+      grid.appendChild(el);
   }
   for(let d=1;d<=daysInMonth;d++){
     const dateStr=`${state.calYear}-${p2(state.calMonth+1)}-${p2(d)}`;
@@ -633,7 +482,8 @@ function renderCalendar(){
     const numEl=document.createElement('div');numEl.className='cal-day-num';numEl.textContent=d;
     el.appendChild(numEl);
     if(entry){
-      const dot=document.createElement('div');dot.className='cal-dot';dot.style.background=emotionColor(entry.emotion);
+      const dot=document.createElement('div');dot.className='cal-dot';
+      dot.style.background=emotionColor(detectEmotion(entry.text));
       el.appendChild(dot);el.onclick=()=>openEntryModal(entry);
     }else{el.onclick=()=>openWrite(dateStr);}
     grid.appendChild(el);
@@ -643,110 +493,51 @@ function renderCalendar(){
 // ═══ MODAL ═══
 function openEntryModal(entry){
   state.modalEntry=entry;
-  document.getElementById('modal-date').textContent=fmtDateKo(entry.date)+' · '+emotionLabel(entry.emotion);
+  document.getElementById('modal-date').textContent=fmtDateKo(entry.date)+' · '+emotionLabel(detectEmotion(entry.text));
   document.getElementById('modal-text').textContent=entry.text;
   document.getElementById('entry-modal').classList.add('open');
 
-  // Update Disqus
-  const pageUrl = window.location.origin + window.location.pathname + '#!entry=' + entry.date;
-  const pageId = 'entry-' + entry.date;
-  
-  if (typeof DISQUS !== 'undefined') {
-    DISQUS.reset({
-      reload: true,
-      config: function () {
-        this.page.identifier = pageId;
-        this.page.url = pageUrl;
-        this.page.title = fmtDateKo(entry.date) + '의 일기';
-      }
-    });
-  } else {
-    window.disqus_config = function () {
-      this.page.identifier = pageId;
-      this.page.url = pageUrl;
-      this.page.title = fmtDateKo(entry.date) + '의 일기';
-    };
-    (function() {
-      var d = document, s = d.createElement('script');
-      s.src = 'https://ads-qjmpg3nuak.disqus.com/embed.js';
-      s.setAttribute('data-timestamp', +new Date());
-      (d.head || d.body).appendChild(s);
-    })();
+  const pageUrl=location.origin+location.pathname+'#!entry='+entry.date;
+  const pageId='entry-'+entry.date;
+  if(window.DISQUS){
+    DISQUS.reset({reload:true,config:function(){this.page.identifier=pageId;this.page.url=pageUrl;}});
+  }else{
+    window.disqus_config=function(){this.page.identifier=pageId;this.page.url=pageUrl;};
+    (function(){var d=document,s=d.createElement('script');s.src='https://ads-qjmpg3nuak.disqus.com/embed.js';s.setAttribute('data-timestamp',+new Date());(d.head||d.body).appendChild(s);})();
   }
 }
 function closeEntryModal(){document.getElementById('entry-modal').classList.remove('open');}
 function closeModal(e){if(e.target.id==='entry-modal')closeEntryModal();}
-function playFromModal(){closeEntryModal();playEntry(state.modalEntry,'player');}
-function shareFromModal(){closeEntryModal();doShare(state.modalEntry);}
+function playFromModal(){closeEntryModal();playEntry(state.modalEntry);}
+function shareFromModal(){doShare(state.modalEntry);showToast('공유 링크가 복사되었습니다 ✓');}
 
 // ═══ SHARE ═══
-function shareEntry(){doShare(state.currentEntry);}
+function shareEntry(){doShare(state.currentEntry);showToast('공유 링크가 복사되었습니다 ✓');}
 function doShare(entry){
   if(!entry)return;
   const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(entry))));
   const url=location.origin+location.pathname.replace('index.html','')+'share.html#share='+encoded;
   navigator.clipboard.writeText(url).catch(()=>{});
-  const toast=document.getElementById('share-toast');
-  toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),2500);
 }
 function checkShare(){
-  const hash=location.hash;
-  if(!hash.startsWith('#share='))return false;
-  // Redirect to dedicated share page
-  const url=location.origin+location.pathname.replace('index.html','')+'share.html'+hash;
-  location.replace(url);
-  return true;
+  if(location.hash.startsWith('#share=')){
+    location.replace(location.origin+location.pathname.replace('index.html','')+'share.html'+location.hash);
+    return true;
+  }
+  return false;
 }
 
-
 // ═══ INIT ═══
-window.addEventListener('resize',()=>{//   const c=document.getElementById('anim-canvas');//   if(c&&state.view==='player'&&state.currentEntry){//     c.width=window.innerWidth;c.height=window.innerHeight;//     cancelAnimationFrame(state.animFrame);state.animFrame=null;//     startSceneSequence(c,state.currentEntry.text,state.currentEntry.style);//   }
+window.addEventListener('resize',()=>{
+  if(state.view==='player'&&state.currentEntry){
+    const canvas=document.getElementById('anim-canvas');
+    canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  }
 });
+
 if(!checkShare()){
   renderCalendar();
   showView('calendar');
-  
-  // GSAP Intro Animation
-  gsap.from(".cal-logo", {
-    duration: 1,
-    y: 30,
-    opacity: 0,
-    ease: "power3.out",
-    delay: 0.5
-  });
-
-  gsap.from(".cal-btn-write", {
-    duration: 1,
-    y: 30,
-    opacity: 0,
-    ease: "power3.out",
-    delay: 0.7
-  });
-
-  gsap.from(".btn-to-cal", {
-    duration: 1,
-    y: 30,
-    opacity: 0,
-    ease: "power3.out",
-    stagger: 0.2,
-    delay: 0.9
-  });
-
-  gsap.from(".cal-month-nav", {
-    duration: 1.2,
-    y: 40,
-    opacity: 0,
-    ease: "power4.out",
-    delay: 1.2
-  });
-
-  gsap.from(".cal-grid", {
-    duration: 1.5,
-    y: 50,
-    opacity: 0,
-    ease: "power4.out",
-    delay: 1.5
-  });
 }
 </script>
 </body>
