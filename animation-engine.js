@@ -79,6 +79,44 @@ const loadBg = () => new Promise(res => {
   img.onerror = () => res(null);
 });
 
+// ── LOGO UTILS ──
+function drawBearLogo(ctx, x, y, size, t) {
+  ctx.save();
+  ctx.translate(x, y);
+  const wiggle = Math.sin(t * 2) * 0.05;
+  ctx.rotate(wiggle);
+  
+  const ol = '#000';
+  ctx.lineWidth = size * 0.05;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+
+  // Ears
+  ctx.fillStyle = '#7A5C44';
+  ctx.strokeStyle = ol;
+  ctx.beginPath(); ctx.arc(-size*0.35, -size*0.2, size*0.22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(size*0.35, -size*0.2, size*0.22, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // Head
+  ctx.beginPath(); ctx.ellipse(0, 0, size*0.6, size*0.5, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+
+  // Eyes
+  ctx.fillStyle = ol;
+  ctx.beginPath(); ctx.ellipse(-size*0.2, -size*0.05, size*0.05, size*0.08, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(size*0.2, -size*0.05, size*0.05, size*0.08, 0, 0, Math.PI*2); ctx.fill();
+
+  // Nose
+  ctx.fillStyle = '#4A3425';
+  ctx.beginPath(); ctx.ellipse(0, size*0.1, size*0.1, size*0.06, 0, 0, Math.PI*2); ctx.fill();
+
+  // Blushes
+  ctx.fillStyle = 'rgba(255, 100, 100, 0.35)';
+  ctx.beginPath(); ctx.arc(-size*0.35, size*0.15, size*0.15, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(size*0.35, size*0.15, size*0.15, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+
 function drawSky(ctx,W,GY,timeOfDay,t){
   const SKIES={morning:['#B8E0F7','#FFD4A8'],afternoon:['#87CEEB','#5BA3D9'],evening:['#7B2D8B','#FF7043'],night:['#12124A','#0A0A1E']};
   const stops=SKIES[timeOfDay]||SKIES.afternoon;
@@ -188,14 +226,21 @@ async function startSceneSequence(canvas,text,artStyle){
       ctx.restore();
     }
 
-    // 4. Logo Overlay (내 오늘의 일기)
+    // 4. Logo Overlay (내 오늘의 일기 & 곰돌이)
     ctx.save();
+    const logoSize = S * 1.6; 
+    const logoY = H * 0.1;
+    
+    // Draw Bear Logo
+    drawBearLogo(ctx, W/2, logoY, logoSize, elapsed);
+
+    // Draw Text Logo
     ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(0,0,0,0.4)';
     ctx.fillStyle = '#000'; ctx.strokeStyle = '#FFF'; ctx.lineWidth = 5;
-    ctx.font = 'bold 42px Noto Serif KR';
+    ctx.font = 'bold 38px Noto Serif KR';
     ctx.textAlign = 'center';
-    ctx.strokeText('내 오늘의 일기', W/2, H*0.07);
-    ctx.fillText('내 오늘의 일기', W/2, H*0.07);
+    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize * 0.8);
+    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize * 0.8);
     ctx.restore();
 
     // 5. Frame (Black border)
