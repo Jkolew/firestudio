@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  ANIMATION ENGINE (V4 - DYNAMIC BACKGROUND)
+//  ANIMATION ENGINE (V5 - SEAMLESS VIDEO & SHIN-CHAN LOGO)
 // ═══════════════════════════════════════════════════════
 
 const DEVELOPER_API_KEY = "";
@@ -70,6 +70,15 @@ function parseSentences(text){return text.replace(/([.!?！？。])\s*/g,'$1\n')
 //  SCENE SEQUENCE ENGINE
 // ═══════════════════════════════════════════════════════
 
+// ═══ BACKGROUND & FRAME LOAD ═══
+let bgImage = null;
+const loadBg = () => new Promise(res => {
+  if(bgImage) return res(bgImage);
+  const img = new Image(); img.src = '애니메이션 그림체.png';
+  img.onload = () => { bgImage = img; res(img); };
+  img.onerror = () => res(null);
+});
+
 function drawSky(ctx,W,GY,timeOfDay,t){
   const SKIES={morning:['#B8E0F7','#FFD4A8'],afternoon:['#87CEEB','#5BA3D9'],evening:['#7B2D8B','#FF7043'],night:['#12124A','#0A0A1E']};
   const stops=SKIES[timeOfDay]||SKIES.afternoon;
@@ -96,6 +105,8 @@ async function startSceneSequence(canvas,text,artStyle){
   const W=canvas.width,H=canvas.height,GY=H*.88,S=H*.08;
   const sentences=parseSentences(text);
   const charCounts=buildCumulativeCharCounts(sentences);
+  
+  await loadBg();
 
   const scenes=await Promise.all(sentences.map(async(s,i)=>{
     const aiResult=await analyzeWithGemini(s);
@@ -105,26 +116,103 @@ async function startSceneSequence(canvas,text,artStyle){
 
   let sceneIdx=-1,startTime=performance.now();
   const captionContainer=document.getElementById('caption-container');
+  let charStates = [];
 
   function render(now){
-    const elapsed=(now-startTime)/1000,sceneDuration=4;
+    const elapsed=(now-startTime)/1000,sceneDuration=4,fadeDuration=0.8;
     let currentSceneIdx=Math.floor(elapsed/sceneDuration);
-    if(currentSceneIdx>=scenes.length){startTime=performance.now();currentSceneIdx=0;}
+    if(currentSceneIdx>=scenes.length){startTime=performance.now();currentSceneIdx=0;charStates=[];}
     const scene=scenes[currentSceneIdx],localT=elapsed%sceneDuration;
+    const isFading = localT < fadeDuration && currentSceneIdx > 0;
+    const fadeAlpha = isFading ? localT / fadeDuration : 1.0;
 
-    if(sceneIdx!==currentSceneIdx){sceneIdx=currentSceneIdx;if(state.activeCaption)state.activeCaption.remove();const cap=document.createElement('div');cap.className='caption-box';cap.textContent=scene.text;captionContainer.appendChild(cap);state.activeCaption=cap;}
+    if(sceneIdx!==currentSceneIdx){
+      sceneIdx=currentSceneIdx;
+      if(captionContainer){
+        if(state.activeCaption)state.activeCaption.remove();
+        const cap=document.createElement('div');
+        cap.className='caption-box';
+        cap.textContent=scene.text;
+        captionContainer.appendChild(cap);
+        state.activeCaption=cap;
+      }
+      
+      const targetCharCount = scene.charCount;
+      const newChars = Array.from({length:targetCharCount},(_,i)=>({
+        targetX:W/2+(i-(targetCharCount-1)/2)*S*2.5,
+        x: charStates[i] ? charStates[i].x : W/2+(i-(targetCharCount-1)/2)*S*2.5,
+        y:GY, arrived:true, facing:1, opacity: charStates[i] ? 1.0 : 0.0
+      }));
+      charStates = newChars;
+    }
+
+    charStates.forEach(ch => {
+      ch.x += (ch.targetX - ch.x) * 0.08;
+      if (ch.opacity < 1.0) ch.opacity += 0.05;
+    });
 
     ctx.clearRect(0,0,W,H);
-    drawSky(ctx,W,GY,scene.time_of_day,localT);
-    drawGround(ctx,W,H,GY);
-    const ssChars=Array.from({length:scene.charCount},(_,i)=>({x:W/2+(i-(scene.charCount-1)/2)*S*2.5,y:GY,arrived:true,facing:1}));
-    drawProps(ctx,W,H,GY,S,scene.props,ssChars,artStyle,localT,scene.location);
-    drawWeather(ctx,W,H,GY,scene.weather||'clear',localT);
-    for(let i=0;i<ssChars.length;i++){const ch=ssChars[i];drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i,scene.intensity??.5);}
+    
+    // 1. Draw Background
+    if(bgImage) {
+      const iw=bgImage.width, ih=bgImage.height;
+      const scale=Math.max(W/iw, H/ih);
+      const dw=iw*scale, dh=ih*scale;
+      ctx.drawImage(bgImage, (W-dw)/2, (H-dh)/2, dw, dh);
+    } else {
+      drawSky(ctx,W,GY,scene.time_of_day,localT);
+      drawGround(ctx,W,H,GY);
+    }
+
+    // 2. Weather & Props (Smooth Transitioning)
+    ctx.save();
+    if (isFading) {
+      const prev = scenes[currentSceneIdx - 1];
+      ctx.globalAlpha = 1.0 - fadeAlpha;
+      drawProps(ctx,W,H,GY,S,prev.props,charStates,artStyle,localT + sceneDuration,prev.location);
+      drawWeather(ctx, W, H, GY, prev.weather || 'clear', localT + sceneDuration);
+      ctx.globalAlpha = fadeAlpha;
+      drawProps(ctx,W,H,GY,S,scene.props,charStates,artStyle,localT,scene.location);
+      drawWeather(ctx, W, H, GY, scene.weather || 'clear', localT);
+    } else {
+      drawProps(ctx,W,H,GY,S,scene.props,charStates,artStyle,localT,scene.location);
+      drawWeather(ctx,W,H,GY,scene.weather||'clear',localT);
+    }
+    ctx.restore();
+
+    // 3. Characters
+    for(let i=0;i<charStates.length;i++){
+      const ch=charStates[i];
+      ctx.save(); ctx.globalAlpha = ch.opacity;
+      drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i,scene.intensity??.5);
+      ctx.restore();
+    }
+
+    // 4. Logo Overlay (내 오늘의 일기)
+    ctx.save();
+    ctx.shadowBlur = 12; ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.fillStyle = '#000'; ctx.strokeStyle = '#FFF'; ctx.lineWidth = 5;
+    ctx.font = 'bold 42px Noto Serif KR';
+    ctx.textAlign = 'center';
+    ctx.strokeText('내 오늘의 일기', W/2, H*0.07);
+    ctx.fillText('내 오늘의 일기', W/2, H*0.07);
+    ctx.restore();
+
+    // 5. Frame (Black border)
+    ctx.strokeStyle = '#000'; ctx.lineWidth = 15;
+    ctx.strokeRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 2;
+    ctx.strokeRect(10, 10, W-20, H-20);
 
     state.animFrame=requestAnimationFrame(render);
   }
   
-  if(scenes.length>0){const cap=document.createElement('div');cap.className='caption-box';cap.textContent=scenes[0].text;captionContainer.appendChild(cap);state.activeCaption=cap;}
+  if(scenes.length>0 && captionContainer){
+    const cap=document.createElement('div');
+    cap.className='caption-box';
+    cap.textContent=scenes[0].text;
+    captionContainer.appendChild(cap);
+    state.activeCaption=cap;
+  }
   state.animFrame=requestAnimationFrame(render);
 }
