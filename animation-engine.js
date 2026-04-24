@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════
-//  ANIMATION ENGINE (V5.3 - PURE SHIN-CHAN ART STYLE)
+//  ANIMATION ENGINE (V6.0 - NOTEBOOK STYLE)
 // ═══════════════════════════════════════════════════════
 
 const DEVELOPER_API_KEY = "";
@@ -7,130 +7,46 @@ const DEVELOPER_API_KEY = "";
 function rand(a,b){return Math.random()*(b-a)+a;}
 function randInt(a,b){return Math.floor(rand(a,b+1));}
 
-// ── LOGO UTILS ──
-function drawBearLogo(ctx, x, y, size, t) {
-  ctx.save();
-  ctx.translate(x, y);
-  
-  const ol = '#000';
-  const bw = size * 1.6; 
-  const bh = size * 1.0; 
-  const breath = Math.sin(t * 1.5) * (size * 0.04);
+// ── NOTEBOOK BACKGROUND ──
+function drawNotebookBackground(ctx, W, H) {
+  // Paper base
+  ctx.fillStyle = '#FEFDF4';
+  ctx.fillRect(0, 0, W, H);
 
-  // 1. Bed Frame (정갈한 사각형 틀)
-  ctx.fillStyle = '#2A2A3A';
-  ctx.strokeStyle = ol;
-  ctx.lineWidth = size * 0.06;
-  roundRect(ctx, -bw/2, -bh/2, bw, bh, size*0.1).fill();
-  ctx.stroke();
-
-  // 2. Pillow
-  ctx.fillStyle = '#4A4A6A';
-  roundRect(ctx, -bw/2 + size*0.1, -bh/2 + size*0.1, size*0.6, size*0.4, size*0.08).fill();
-  ctx.stroke();
-
-  // 3. Bear (침대 중앙에 안착)
-  ctx.save();
-  ctx.translate(-size*0.05, breath); 
-  
-  // Ears
-  ctx.fillStyle = '#7A5C44';
-  ctx.beginPath(); ctx.arc(-size*0.3, -size*0.15, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-  ctx.beginPath(); ctx.arc(size*0.15, -size*0.15, size*0.18, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-  // Face
-  ctx.beginPath(); ctx.ellipse(-size*0.08, 0, size*0.48, size*0.4, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-  // Closed Eyes
-  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.05;
-  ctx.beginPath(); ctx.arc(-size*0.25, 0, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
-  ctx.beginPath(); ctx.arc(size*0.1, 0, size*0.08, 0.2, Math.PI-0.2); ctx.stroke();
-
-  // Nose
-  ctx.fillStyle = '#4A3425';
-  ctx.beginPath(); ctx.ellipse(-size*0.08, size*0.08, size*0.08, size*0.05, 0, 0, Math.PI*2); ctx.fill();
-  
-  // Blushes
-  ctx.fillStyle = 'rgba(255, 120, 120, 0.4)';
-  ctx.beginPath(); ctx.arc(-size*0.32, size*0.12, size*0.12, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(size*0.2, size*0.12, size*0.12, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
-
-  // 4. Blanket (사각형 하단에 딱 맞춤)
-  const grad = ctx.createLinearGradient(-bw/2, 0, bw/2, bh/2);
-  grad.addColorStop(0, '#D4B892'); grad.addColorStop(1, '#B69B7A');
-  ctx.fillStyle = grad;
-  ctx.save();
-  ctx.translate(0, breath * 0.5);
-  roundRect(ctx, -bw/2, size*0.05, bw, bh/2 + size*0.2, size*0.08).fill();
-  ctx.strokeStyle = ol; ctx.lineWidth = size * 0.06;
-  ctx.stroke();
-  ctx.restore();
-
-  // 5. ZZZ
-  ctx.fillStyle = '#D4B892';
-  ctx.font = `bold ${size*0.3}px Arial`;
-  for(let i=0; i<2; i++) {
-    const zt = (t + i*1.8) % 3.5;
-    const za = 1 - zt/3.5;
-    ctx.save();
-    ctx.globalAlpha = za;
-    ctx.translate(size*0.6 + zt*size*0.3, -size*0.5 - zt*size*0.4);
-    ctx.fillText('z', 0, 0);
-    ctx.restore();
-  }
-
-  ctx.restore();
-}
-
-function drawShinSky(ctx, W, GY, timeOfDay, t) {
-  const SKIES = {
-    morning:   ['#FFD4A8', '#FFE8B0', '#B8E0F7'],
-    afternoon: ['#87CEEB', '#B8E0F7', '#D1F0FF'],
-    evening:   ['#FF7043', '#FF8A65', '#FFCCBC'],
-    night:     ['#0A0A1E', '#1A1A4A', '#2A2A60'],
-  };
-  const stops = SKIES[timeOfDay] || SKIES.afternoon;
-  const grad = ctx.createLinearGradient(0, 0, 0, GY);
-  stops.forEach((c, i) => grad.addColorStop(i / (stops.length - 1), c));
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, GY);
-
-  // 짱구 스타일 뭉게구름
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  for (let i = 0; i < 3; i++) {
-    const cx = (W * (0.2 + i * 0.3) + Math.sin(t * 0.2 + i) * 30) % (W + 200) - 100;
-    const cy = GY * (0.2 + i * 0.1);
-    const rs = GY * 0.12;
-    ctx.beginPath();
-    ctx.arc(cx, cy, rs, 0, Math.PI * 2);
-    ctx.arc(cx + rs * 0.8, cy + rs * 0.2, rs * 0.8, 0, Math.PI * 2);
-    ctx.arc(cx - rs * 0.5, cy + rs * 0.3, rs * 0.7, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function drawShinGround(ctx, W, H, GY) {
-  // 따뜻한 종이 느낌의 지면
-  ctx.fillStyle = '#FFFBF0'; 
-  ctx.fillRect(0, GY, W, H - GY);
-  
-  // 지면 경계선 (약간 삐뚤빼뚤하게)
-  ctx.strokeStyle = '#000';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(0, GY);
-  for(let x=0; x<=W; x+=50) {
-    ctx.lineTo(x, GY + Math.sin(x*0.01)*2);
-  }
-  ctx.stroke();
-
-  // 지면 질감 효과
-  ctx.strokeStyle = 'rgba(0,0,0,0.05)';
+  // Horizontal ruled lines
+  const lineSpacing = Math.max(22, H / 27);
+  ctx.strokeStyle = 'rgba(100, 149, 237, 0.22)';
   ctx.lineWidth = 1;
-  for(let i=0; i<20; i++) {
-    const lx = (i*137)%W, ly = GY + (i*17)%(H-GY);
-    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx+20, ly); ctx.stroke();
+  for (let y = lineSpacing; y < H; y += lineSpacing) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+
+  // Red margin line
+  const margin = Math.max(48, W * 0.07);
+  ctx.strokeStyle = 'rgba(220, 70, 70, 0.35)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(margin, 0); ctx.lineTo(margin, H); ctx.stroke();
+
+  // Spiral binding
+  const spiralX  = margin * 0.38;
+  const coilR    = Math.max(5, margin * 0.13);
+  const numCoils = Math.floor(H / (coilR * 4.2));
+  ctx.strokeStyle = 'rgba(90, 90, 90, 0.38)';
+  ctx.lineWidth = 2.2;
+  for (let i = 0; i < numCoils; i++) {
+    const cy = (i + 0.5) * (H / numCoils);
+    ctx.beginPath();
+    ctx.arc(spiralX, cy, coilR, -Math.PI * 0.25, Math.PI * 1.25);
+    ctx.stroke();
+  }
+
+  // Subtle paper texture (faint horizontal strokes)
+  ctx.strokeStyle = 'rgba(0,0,0,0.025)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 18; i++) {
+    const lx = ((i * 173) % (W - 60)) + 30;
+    const ly = ((i * 53)  % (H - 20)) + 10;
+    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 28, ly); ctx.stroke();
   }
 }
 
@@ -206,12 +122,11 @@ async function startSceneSequence(canvas,text,artStyle){
     charStates.forEach(ch=>{ch.x+=(ch.targetX-ch.x)*0.08; if(ch.opacity<1)ch.opacity+=0.05;});
 
     ctx.clearRect(0,0,W,H);
-    
-    // 1. Draw Procedural Shin-chan Background
-    drawShinSky(ctx, W, GY, scene.time_of_day, localT);
-    drawShinGround(ctx, W, H, GY);
 
-    // 2. Weather & Props
+    // 1. Notebook background
+    drawNotebookBackground(ctx, W, H);
+
+    // 2. Props
     ctx.save();
     if(isFading){
       const prev=scenes[currentIdx-1];
@@ -229,20 +144,19 @@ async function startSceneSequence(canvas,text,artStyle){
       ctx.restore();
     }
 
-    // 4. Branding Logo (Large & Centered)
+    // 4. Top-left page title
     ctx.save();
-    const logoSize = S * 2.2; const logoY = H * 0.16;
-    drawBearLogo(ctx, W/2, logoY, logoSize, elapsed);
-    ctx.shadowBlur=15; ctx.shadowColor='rgba(0,0,0,0.5)';
-    ctx.fillStyle='#000'; ctx.strokeStyle='#FFF'; ctx.lineWidth=6;
-    ctx.font='bold 48px Noto Serif KR'; ctx.textAlign='center';
-    ctx.strokeText('내 오늘의 일기', W/2, logoY + logoSize);
-    ctx.fillText('내 오늘의 일기', W/2, logoY + logoSize);
+    const margin = Math.max(48, W * 0.07);
+    const titleX = margin + W * 0.03;
+    const titleY = H * 0.07;
+    ctx.font = `bold ${Math.round(S * 0.7)}px 'Noto Serif KR', serif`;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(50, 40, 80, 0.75)';
+    ctx.fillText('오늘의 일기', titleX, titleY);
     ctx.restore();
 
-    // 5. Frame
-    ctx.strokeStyle='#000'; ctx.lineWidth=15; ctx.strokeRect(0,0,W,H);
-    ctx.strokeStyle='rgba(0,0,0,0.15)'; ctx.lineWidth=2; ctx.strokeRect(10,10,W-20,H-20);
+    // 5. Thin border
+    ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 8; ctx.strokeRect(0,0,W,H);
 
     state.animFrame=requestAnimationFrame(render);
   }
