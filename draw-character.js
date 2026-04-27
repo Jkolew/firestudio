@@ -36,7 +36,7 @@ function drawCharacter(ctx, cx, cy, S, action, emotion, t, facing, _s, _st, char
   const bTopY   = -(legH + bodyH);   // body top y
   const headCY  = bTopY - headR;     // head centre y
 
-  const bounce  = Math.sin(t * 2.8) * S * 0.03;
+  const bounce  = Math.sin(t * 2.8) * S * 0.05;
 
   // Default joint positions
   let lLfx = -S*0.26, lLfy = 0;
@@ -45,31 +45,106 @@ function drawCharacter(ctx, cx, cy, S, action, emotion, t, facing, _s, _st, char
   let aRhx =  S*0.65, aRhy = bTopY + S*1.05;
   let hx   = 0,       hy   = headCY;
 
-  // Action overrides
+  // Action poses
   if (action === 'walk' || action === 'run') {
     const spd = action === 'run' ? 5.5 : 3.5;
-    const amt = action === 'run' ? 0.50 : 0.36;
+    const amt = action === 'run' ? 0.52 : 0.38;
     const sw  = Math.sin(t * spd) * S * amt;
     lLfx -= sw; lRfx += sw;
-    if (sw < 0) lLfy = S * 0.22; else lRfy = S * 0.22;
-    aLhx += sw * 0.4; aRhx -= sw * 0.4;
+    if (sw < 0) lLfy = S * 0.24; else lRfy = S * 0.24;
+    aLhx += sw * 0.45; aRhx -= sw * 0.45;
   } else if (action === 'wave') {
-    aRhx = S*0.28 + Math.sin(t*5)*S*0.15;
-    aRhy = bTopY - S*0.3;
+    aRhx = S*0.3 + Math.sin(t*5.5)*S*0.20;
+    aRhy = bTopY - S*0.35 + Math.sin(t*5.5)*S*0.08;
+    hy  += Math.sin(t*5.5)*S*0.015;
   } else if (action === 'cry') {
-    aLhx = -S*0.1; aLhy = bTopY + S*0.2;
-    aRhx =  S*0.1; aRhy = bTopY + S*0.2;
-    hy  += S*0.1 + Math.sin(t*7)*S*0.025;
-  } else if (action === 'laugh' || action === 'dance') {
-    const la = Math.sin(t * 4) * S * 0.2;
-    aLhx = -S*0.65; aLhy = bTopY - S*0.05 + la;
-    aRhx =  S*0.65; aRhy = bTopY - S*0.05 - la;
-    hy  -= Math.abs(la) * 0.05;
+    aLhx = -S*0.08; aLhy = bTopY + S*0.15;
+    aRhx =  S*0.08; aRhy = bTopY + S*0.15;
+    hy  += S*0.12 + Math.sin(t*8)*S*0.03;
+  } else if (action === 'laugh') {
+    const la = Math.sin(t * 4.5) * S * 0.22;
+    aLhx = -S*0.7; aLhy = bTopY - S*0.05 + la;
+    aRhx =  S*0.7; aRhy = bTopY - S*0.05 - la;
+    hy  -= Math.abs(la) * 0.06;
+  } else if (action === 'dance') {
+    const la = Math.sin(t * 5) * S * 0.25;
+    const lean = Math.sin(t * 2.5) * S * 0.04;
+    aLhx = -S*0.8 + lean; aLhy = bTopY - S*0.15 + la;
+    aRhx =  S*0.8 + lean; aRhy = bTopY - S*0.15 - la;
+    lLfx -= Math.sin(t*5)*S*0.12;
+    lRfx += Math.sin(t*5)*S*0.12;
+    hy   += lean * 0.4;
   } else if (action === 'drink' || action === 'eat') {
-    aRhx = S*0.10; aRhy = bTopY + S*0.05;
+    const lift = 0.5 + Math.sin(t*3)*0.5;
+    aRhx = S*0.12; aRhy = bTopY + S*0.05 + (1-lift)*S*0.4;
+    aLhx = -S*0.55; aLhy = bTopY + S*0.95;
   } else if (action === 'sleep') {
-    hy += S*0.12;
-    hx += S*0.08;
+    hy += S*0.14; hx += S*0.10;
+    aLhx = -S*0.55; aLhy = bTopY + S*1.1;
+    aRhx =  S*0.20; aRhy = bTopY + S*0.85;
+  } else if (action === 'sit') {
+    lLfx = -S*0.55; lLfy = -S*0.48;
+    lRfx =  S*0.72; lRfy = -S*0.48;
+    aLhx = -S*0.55; aLhy = bTopY + S*1.1;
+    aRhx =  S*0.55; aRhy = bTopY + S*1.1;
+  } else if (action === 'work') {
+    const typ = Math.sin(t*8)*S*0.04;
+    aLhx = -S*0.22; aLhy = bTopY + S*0.45 + typ;
+    aRhx =  S*0.22; aRhy = bTopY + S*0.45 - typ;
+    hy  += S*0.05;
+  } else if (action === 'game') {
+    const btn = Math.sin(t*6)*S*0.05;
+    aLhx = -S*0.18; aLhy = bTopY + S*0.5 + btn;
+    aRhx =  S*0.24; aRhy = bTopY + S*0.5 - btn;
+    hy  += S*0.04;
+  } else if (action === 'talk') {
+    const gest = Math.sin(t*3.5);
+    aRhx = S*0.72 + gest*S*0.22; aRhy = bTopY + S*0.28 + gest*S*0.12;
+    aLhx = -S*0.52; aLhy = bTopY + S*0.95;
+    hy  += Math.sin(t*5)*S*0.02;
+  } else if (action === 'cook') {
+    const stir = t * 2.5;
+    aRhx = S*0.12 + Math.cos(stir)*S*0.38; aRhy = bTopY + S*0.45 + Math.sin(stir)*S*0.22;
+    aLhx = -S*0.38; aLhy = bTopY + S*0.55;
+  } else if (action === 'shop') {
+    aRhx = S*0.88 + Math.sin(t*2)*S*0.10; aRhy = bTopY + S*0.38;
+    aLhx = -S*0.35; aLhy = bTopY + S*0.80;
+  } else if (action === 'swim') {
+    const sw = Math.sin(t*3.2);
+    aLhx = -S*0.95 + sw*S*0.45; aLhy = bTopY + S*0.55 - Math.max(0,sw)*S*0.55;
+    aRhx =  S*0.95 - sw*S*0.45; aRhy = bTopY + S*0.55 + Math.min(0,sw)*S*0.55;
+    lLfx = -S*0.18 + sw*S*0.12; lRfx = S*0.18 - sw*S*0.12;
+  } else if (action === 'climb') {
+    const cl = Math.sin(t*2.8);
+    aLhx = -S*0.38; aLhy = bTopY - S*0.2 - (cl>0 ? cl*S*0.45 : 0);
+    aRhx =  S*0.38; aRhy = bTopY - S*0.2 - (cl<0 ? -cl*S*0.45 : 0);
+    lLfx = -S*0.28 - (cl>0 ? cl*S*0.1 : 0);
+    lRfx =  S*0.28 + (cl<0 ? -cl*S*0.1 : 0);
+  } else if (action === 'jump') {
+    const jp = Math.abs(Math.sin(t*3.5));
+    aLhx = -S*0.65; aLhy = bTopY - S*0.18 - jp*S*0.35;
+    aRhx =  S*0.65; aRhy = bTopY - S*0.18 - jp*S*0.35;
+    lLfx = -S*0.14; lLfy = -jp*S*0.40;
+    lRfx =  S*0.14; lRfy = -jp*S*0.40;
+  } else if (action === 'throw') {
+    const ph = t*2.8;
+    aRhx = S*0.95 + Math.sin(ph)*S*0.55; aRhy = bTopY + S*0.25 - Math.cos(ph)*S*0.38;
+    aLhx = -S*0.48; aLhy = bTopY + S*0.80;
+    lLfx = -S*0.40; lRfx = S*0.18;
+  } else if (action === 'hug') {
+    const pulse = 1 + Math.sin(t*2)*0.04;
+    aLhx = -S*0.88*pulse; aLhy = bTopY + S*0.52;
+    aRhx =  S*0.88*pulse; aRhy = bTopY + S*0.52;
+  } else if (action === 'kiss') {
+    hx = S*0.18 + Math.sin(t*1.5)*S*0.03;
+    hy = headCY + S*0.06;
+    aLhx = -S*0.35; aLhy = bTopY + S*0.58;
+    aRhx =  S*0.35; aRhy = bTopY + S*0.58;
+  } else {
+    // idle — gentle breathing sway
+    const sway = Math.sin(t*1.8)*S*0.05;
+    aLhx = -S*0.62 + sway*0.3; aLhy = bTopY + S*1.02 - Math.abs(sway)*0.2;
+    aRhx =  S*0.62 - sway*0.3; aRhy = bTopY + S*1.02 - Math.abs(sway)*0.2;
   }
 
   // Ground shadow (not affected by bounce)

@@ -66,15 +66,69 @@ async function analyzeWithGemini(text) {
   } catch (e) { console.error("Gemini Error:", e.message); return null; }
 }
 
-const EMOTIONS={ night:{words:['밤','별','달'],label:'밤하늘',color:'#9B8FE8'}, rain:{words:['비','우산'],label:'비 오는 날',color:'#7AAAD4'}, love:{words:['사랑','설레'],label:'사랑',color:'#FF88BB'}, happy:{words:['행복','웃었'],label:'행복',color:'#F5C842'}, sad:{words:['힘들','슬프'],label:'슬픔',color:'#6AAAD8'}, angry:{words:['화났'],label:'화남',color:'#F87171'}, peaceful:{words:['평화','조용'],label:'평온',color:'#6EE7B7'}, excited:{words:['두근'],label:'설렘',color:'#C084FC'}, lonely:{words:['혼자'],label:'외로움',color:'#94A3B8'} };
-const ACTIONS={ throw:['던졌'], hug:['안았'], kiss:['키스'], cry:['울었'], laugh:['웃었'], eat:['먹었'], drink:['마셨'], game:['게임'], sleep:['잤다'], walk:['걸었'], run:['뛰었'], work:['공부'], talk:['얘기'], wave:['인사'], sit:['앉았'], cook:['요리'], shop:['쇼핑'], dance:['춤'], swim:['수영'], climb:['등산'] };
-const PROP_DETECT={ snowball:['눈'], ball:['공'], phone:['폰'], game:['게임'], book:['책'], coffee:['커피'], food:['밥'], bag:['가방'], money:['돈'], music:['노래'], umbrella:['우산'] };
-const LOCATIONS={ snow:['눈'], pcroom:['피방'], cafe:['카페'], home:['집'], outside:['밖'], sea:['바다'], mountain:['산'], school:['학교'], store:['마트'], office:['회사'] };
+const EMOTIONS={
+  night:   {words:['밤','별','달','야간','야밤'],label:'밤하늘',color:'#9B8FE8'},
+  rain:    {words:['비','우산','비가','빗','장마'],label:'비 오는 날',color:'#7AAAD4'},
+  love:    {words:['사랑','설레','좋아','보고 싶','그리'],label:'사랑',color:'#FF88BB'},
+  happy:   {words:['행복','웃었','좋았','즐거','기분 좋','최고','신났','재밌','기쁘'],label:'행복',color:'#F5C842'},
+  sad:     {words:['힘들','슬프','슬펐','속상','눈물','마음이 아','우울','지쳤'],label:'슬픔',color:'#6AAAD8'},
+  angry:   {words:['화났','짜증','열받','화가','억울','분해'],label:'화남',color:'#F87171'},
+  peaceful:{words:['평화','조용','평온','여유','한가','잔잔'],label:'평온',color:'#6EE7B7'},
+  excited: {words:['두근','설렘','기대','흥분','떨렸','떨려'],label:'설렘',color:'#C084FC'},
+  lonely:  {words:['혼자','외로','쓸쓸','쓸'],label:'외로움',color:'#94A3B8'},
+};
+const ACTIONS={
+  throw: ['던졌','던지','던','투척'],
+  hug:   ['안았','안아','포옹','껴안','안고'],
+  kiss:  ['키스','뽀뽀'],
+  cry:   ['울었','울어','눈물','흐느','흑흑','ㅠㅠ','ㅜㅜ','울고','울음'],
+  laugh: ['웃었','웃어','ㅋㅋ','ㅎㅎ','하하','히히','웃음','낄낄','빵','크크'],
+  eat:   ['먹었','먹어','먹고','먹음','식사','점심','저녁','아침','밥을','음식','라면','치킨','피자','햄버거','삼겹','떡볶','분식','간식','맛집','배달','드셨'],
+  drink: ['마셨','마셔','마시고','마심','커피','음료','물을','술을','음주','차를','카페라테','아메리카'],
+  game:  ['게임','롤','스팀','닌텐도','피씨방','피방','pc방','플스','오버워치','마인크래프트','배그'],
+  sleep: ['잤다','잠을','자고','졸려','누웠','침대','피곤','꿈을','잠자','취침','낮잠','자버렸'],
+  walk:  ['걸었','걸어','걷고','산책','걷기','걸어서','걸음','보행'],
+  run:   ['뛰었','뛰어','달렸','달리','조깅','뛰고','뛰어가','달려'],
+  work:  ['공부','일했','일해','과제','숙제','업무','시험','야근','리포트','보고서','일하고','공부했','공부하'],
+  talk:  ['얘기','말했','대화','통화','카톡','문자','말을','수다','채팅','전화했','이야기'],
+  wave:  ['인사','안녕','반가','손을 흔','배웅','인사했'],
+  sit:   ['앉았','앉아','앉고','쉬었','쉬어','휴식','쉬고','앉아서'],
+  cook:  ['요리','만들었','끓였','볶았','구웠','조리','만들어','요리했','해먹'],
+  shop:  ['쇼핑','샀다','구매','마트','편의점','백화점','사고','구입','장봤','장을'],
+  dance: ['춤','댄스','춤을','댄싱','신나','들썩','노래방'],
+  swim:  ['수영','물놀이','수영장'],
+  climb: ['등산','올랐','등반','트레킹','오르고','산에 올'],
+  jump:  ['점프','뛰어올','뛰어내','깡충'],
+};
+const LOCATION_ACTION_DEFAULT = {
+  cafe:'drink', home:'sit', school:'work', pcroom:'game',
+  sea:'walk', mountain:'climb', store:'shop', office:'work',
+  outside:'walk', snow:'walk',
+};
+const PROP_DETECT={
+  snowball:['눈'], ball:['공','축구','농구'], phone:['폰','핸드폰','스마트폰','전화'],
+  game:['게임','닌텐도','조이스틱'], book:['책','교재','소설','만화'],
+  coffee:['커피','카페라테','아메리카','라떼'], food:['밥','음식','라면','치킨','피자','떡볶'],
+  bag:['가방','백팩','쇼핑백'], money:['돈','용돈','지갑'],
+  music:['노래','음악','이어폰','헤드폰'], umbrella:['우산'],
+};
+const LOCATIONS={
+  snow:   ['눈이 오','눈밭','눈 오','설원','눈이'],
+  pcroom: ['피방','pc방','피씨방','게임방'],
+  cafe:   ['카페','커피숍','스타벅스'],
+  home:   ['집에','집에서','방에서','방에','자취방','거실'],
+  outside:['밖에','공원','거리','길가','야외'],
+  sea:    ['바다','해변','해수욕','해안'],
+  mountain:['등산','산에','산길','산을'],
+  school: ['학교','교실','강의실','도서관','캠퍼스','수업','학원'],
+  store:  ['마트','편의점','백화점','쇼핑몰','시장'],
+  office: ['회사','사무실','직장','오피스'],
+};
 function detectEmotion(text){let b='neutral',s=0;for(const[e,d]of Object.entries(EMOTIONS)){const c=d.words.filter(w=>text.includes(w)).length;if(c>s){s=c;b=e;}}return b;}
 function emotionLabel(e){return EMOTIONS[e]?.label||'하루';}
 function emotionColor(e){return EMOTIONS[e]?.color||'#A1A1AA';}
 function detectProps(text){const p=[];for(const[pr,ws]of Object.entries(PROP_DETECT)){if(ws.some(w=>text.includes(w)))p.push(pr);}return p;}
-function detectAction(text){for(const[a,ws]of Object.entries(ACTIONS)){if(ws.some(w=>text.includes(w)))return a;}return'idle';}
+function detectAction(text,location){for(const[a,ws]of Object.entries(ACTIONS)){if(ws.some(w=>text.includes(w)))return a;}return LOCATION_ACTION_DEFAULT[location]||'idle';}
 function detectLocation(text){for(const[l,ws]of Object.entries(LOCATIONS)){if(ws.some(w=>text.includes(w)))return l;}return null;}
 function buildCumulativeCharCounts(sentences){let c=1;return sentences.map(s=>{if(s.includes('혼자'))c=1;else if(['친구','가족','엄마','아빠'].some(w=>s.includes(w)))c=Math.min(c+1,3);return c;});}
 function parseSentences(text){return text.replace(/([.!?！？。])\s*/g,'$1\n').split('\n').map(s=>s.trim()).filter(s=>s.length>1);}
@@ -88,7 +142,7 @@ async function startSceneSequence(canvas,text,artStyle){
   const scenes=await Promise.all(sentences.map(async(s,i)=>{
     const aiResult=await analyzeWithGemini(s);
     if(aiResult){return{text:s,emotion:aiResult.emotion||detectEmotion(text),action:aiResult.action||'idle',location:aiResult.location||null,props:aiResult.props||[],charCount:aiResult.charCount||charCounts[i],time_of_day:aiResult.time_of_day||'afternoon',intensity:aiResult.intensity??.5,weather:aiResult.weather||'clear'};}
-    const emo=detectEmotion(text); return{text:s,emotion:emo,action:detectAction(s),location:detectLocation(s),props:detectProps(s),charCount:charCounts[i],time_of_day:emo==='night'?'night':'afternoon',intensity:.5,weather:emo==='rain'?'rain':'clear'};
+    const emo=detectEmotion(s); const loc=detectLocation(s); return{text:s,emotion:emo,action:detectAction(s,loc),location:loc,props:detectProps(s),charCount:charCounts[i],time_of_day:emo==='night'?'night':'afternoon',intensity:.5,weather:emo==='rain'?'rain':'clear'};
   }));
 
   let sceneIdx=-1,startTime=performance.now();
