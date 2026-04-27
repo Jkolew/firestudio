@@ -152,6 +152,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <!-- PLAYER -->
 <div class="view hidden" id="v-player">
   <canvas id="anim-canvas"></canvas>
+  <div id="dbg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:#fff;padding:16px 20px;border-radius:10px;z-index:999;font:bold 14px monospace;text-align:center;pointer-events:none;display:none"></div>
   <div class="player-top">
     <div class="player-meta">
       <div class="player-date" id="player-date"></div>
@@ -378,10 +379,18 @@ function setStyle(btn){
 function generateAnimation(){
   const text=document.getElementById('diary-textarea').value.trim();
   if(!text){alert('일기를 먼저 작성해주세요.');return;}
-  const emotion=detectEmotion(text);
-  const entry={date:state.writeDate,text,style:state.style,emotion,ts:Date.now()};
-  saveEntry(entry);
-  playEntry(entry,'player');
+  const dbg=document.getElementById('dbg');
+  dbg.style.display='block';dbg.textContent='⏳ 시작 중...';
+  try{
+    const emotion=detectEmotion(text);
+    const entry={date:state.writeDate,text,style:state.style,emotion,ts:Date.now()};
+    saveEntry(entry);
+    playEntry(entry,'player');
+    dbg.textContent='✅ 시작됨 v'+Date.now()%10000;
+  }catch(e){
+    dbg.style.background='red';
+    dbg.textContent='❌ ERROR: '+e.message;
+  }
 }
 function playEntry(entry,viewId='player'){
   state.currentEntry=entry;
@@ -670,15 +679,11 @@ function startSceneSequence(canvas, text, style){
     drawSubtitle(ctx,W,H,scene.text,ss.localT,scene.duration);
     drawProgress(ctx,W,sceneIdx,scenes.length);
 
-    // DEBUG overlay
-    ctx.save();
-    const dbx=W/2, dby=H/2;
-    ctx.fillStyle='rgba(0,0,0,0.75)';ctx.fillRect(dbx-140,dby-36,280,72);
-    ctx.fillStyle='#00FF00';ctx.font='bold 15px monospace';ctx.textAlign='center';
-    ctx.fillText('ACTION: '+scene.action,dbx,dby-12);
-    ctx.fillText('t='+ss.localT.toFixed(2)+'  frame='+Math.round(ss.localT*60),dbx,dby+14);
-    ctx.fillText(fading?'FADING':'PLAYING',dbx,dby+36);
-    ctx.restore();
+    // DEBUG — update HTML element each frame
+    if(Math.round(ss.localT*10)%5===0){
+      const d=document.getElementById('dbg');
+      if(d)d.textContent='ACTION:'+scene.action+' t='+ss.localT.toFixed(1)+(fading?' FADE':' PLAY');
+    }
 
     // Overlays
     grainOverlay(ctx,W,H,.016);
