@@ -7,13 +7,11 @@ const DEVELOPER_API_KEY = "";
 function rand(a,b){return Math.random()*(b-a)+a;}
 function randInt(a,b){return Math.floor(rand(a,b+1));}
 
-// ── NOTEBOOK BACKGROUND ──
+// ── NOTEBOOK BACKGROUND (paper + lines only) ──
 function drawNotebookBackground(ctx, W, H) {
-  // Paper base
   ctx.fillStyle = '#FEFDF4';
   ctx.fillRect(0, 0, W, H);
 
-  // Horizontal ruled lines
   const lineSpacing = Math.max(22, H / 27);
   ctx.strokeStyle = 'rgba(100, 149, 237, 0.22)';
   ctx.lineWidth = 1;
@@ -21,15 +19,25 @@ function drawNotebookBackground(ctx, W, H) {
     ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
   }
 
-  // Red margin line
   const margin = Math.max(48, W * 0.07);
   ctx.strokeStyle = 'rgba(220, 70, 70, 0.35)';
   ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.moveTo(margin, 0); ctx.lineTo(margin, H); ctx.stroke();
 
-  // Spiral binding
-  const spiralX  = margin * 0.38;
-  const coilR    = Math.max(5, margin * 0.13);
+  ctx.strokeStyle = 'rgba(0,0,0,0.025)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 18; i++) {
+    const lx = ((i * 173) % (W - 60)) + 30;
+    const ly = ((i * 53)  % (H - 20)) + 10;
+    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 28, ly); ctx.stroke();
+  }
+}
+
+// ── NOTEBOOK BINDING (drawn above scene, below characters) ──
+function drawNotebookBinding(ctx, W, H) {
+  const margin  = Math.max(48, W * 0.07);
+  const spiralX = margin * 0.38;
+  const coilR   = Math.max(5, margin * 0.13);
   const numCoils = Math.floor(H / (coilR * 4.2));
   ctx.strokeStyle = 'rgba(90, 90, 90, 0.38)';
   ctx.lineWidth = 2.2;
@@ -38,15 +46,6 @@ function drawNotebookBackground(ctx, W, H) {
     ctx.beginPath();
     ctx.arc(spiralX, cy, coilR, -Math.PI * 0.25, Math.PI * 1.25);
     ctx.stroke();
-  }
-
-  // Subtle paper texture (faint horizontal strokes)
-  ctx.strokeStyle = 'rgba(0,0,0,0.025)';
-  ctx.lineWidth = 1;
-  for (let i = 0; i < 18; i++) {
-    const lx = ((i * 173) % (W - 60)) + 30;
-    const ly = ((i * 53)  % (H - 20)) + 10;
-    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 28, ly); ctx.stroke();
   }
 }
 
@@ -122,29 +121,49 @@ async function startSceneSequence(canvas,text,artStyle){
     charStates.forEach(ch=>{ch.x+=(ch.targetX-ch.x)*0.08; if(ch.opacity<1)ch.opacity+=0.05;});
 
     ctx.clearRect(0,0,W,H);
+    S_GLOBAL = S;
 
-    // 1. Notebook background
+    // 1. Notebook paper (lines + margin — no spiral yet)
     drawNotebookBackground(ctx, W, H);
 
-    // 2. Props
+    // 2. Location background + time overlay (with cross-fade)
     ctx.save();
     if(isFading){
       const prev=scenes[currentIdx-1];
       ctx.globalAlpha=1-fadeAlpha;
-      drawProps(ctx,W,H,GY,S,prev.props,charStates,artStyle,localT+sceneDuration,prev.location);
+      drawLocationBackground(ctx,W,H,GY,S,prev.location,elapsed);
+      drawTimeOverlay(ctx,W,H,prev.time_of_day,elapsed);
       ctx.globalAlpha=fadeAlpha;
     }
-    drawProps(ctx,W,H,GY,S,scene.props,charStates,artStyle,localT,scene.location);
+    drawLocationBackground(ctx,W,H,GY,S,scene.location,elapsed);
+    drawTimeOverlay(ctx,W,H,scene.time_of_day,elapsed);
     ctx.restore();
 
-    // 3. Characters
+    // 3. Spiral binding (sits on top of scene background)
+    drawNotebookBinding(ctx, W, H);
+
+    // 4. Props (with cross-fade)
+    ctx.save();
+    if(isFading){
+      const prev=scenes[currentIdx-1];
+      ctx.globalAlpha=1-fadeAlpha;
+      drawProps(ctx,W,H,GY,S,prev.props,charStates,artStyle,elapsed,prev.location);
+      ctx.globalAlpha=fadeAlpha;
+    }
+    drawProps(ctx,W,H,GY,S,scene.props,charStates,artStyle,elapsed,scene.location);
+    ctx.restore();
+
+    // 5. Characters
     for(let i=0;i<charStates.length;i++){
       const ch=charStates[i]; ctx.save(); ctx.globalAlpha=ch.opacity;
       drawCharacter(ctx,ch.x,ch.y,S,scene.action,scene.emotion,localT,ch.facing,null,artStyle,i,scene.intensity??.5);
       ctx.restore();
     }
 
-    // 4. Top-left page title
+    // 6. Weather (on top of characters)
+    drawWeatherEffect(ctx,W,H,scene.weather,elapsed);
+
+    // 7. Top-left page title
     ctx.save();
     const margin = Math.max(48, W * 0.07);
     const titleX = margin + W * 0.03;
@@ -155,7 +174,7 @@ async function startSceneSequence(canvas,text,artStyle){
     ctx.fillText('오늘의 일기', titleX, titleY);
     ctx.restore();
 
-    // 5. Thin border
+    // 8. Thin border
     ctx.strokeStyle = 'rgba(0,0,0,0.12)'; ctx.lineWidth = 8; ctx.strokeRect(0,0,W,H);
 
     state.animFrame=requestAnimationFrame(render);
