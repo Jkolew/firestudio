@@ -259,7 +259,7 @@ const ACTIONS={
   cry:    ['울었','눈물','흘렸','흑흑','훌쩍','ㅠㅠ','ㅜㅜ','울어','울음','울고','울다','울','서럽','슬펐','슬퍼','눈물이','힘들었','힘들어','힘든'],
   laugh:  ['웃었','웃음','크게 웃','하하','ㅋㅋ','ㅎㅎ','낄낄','빵 터','히히','웃어','웃다','웃','재밌었','재미있었','재밌어','재미있어','즐거웠','즐거워','신났','신나'],
   eat:    ['먹었','밥을','식사','점심','저녁','아침','음식','라면','치킨','피자','떡볶','간식','먹어','먹고','맛있','먹다','먹','밥이','밥 먹','점심 먹','저녁 먹','아침 먹','커피를','카페'],
-  drink:  ['마셨','마셔','마시고','마심','음료','물을','술을','카페라테','아메리카노','마시다','마'],
+  drink:  ['마셨','마셔','마시고','마심','음료','물을','술을','카페라테','아메리카노','마시다'],
   sleep:  ['잤','잠을','잠들','잠이','졸렸','졸려','누웠','침대','피곤','낮잠','자고','자다','잠','졸음','졸았','피곤했','늦잠'],
   walk:   ['걸었','산책','걷','나갔','나왔','걸어','걷고','걸음','갔다','갔어','갔음','왔다','왔어','왔음','갔습','왔습','다녀왔','나들이','나가','나와','외출'],
   run:    ['뛰었','달렸','뛰다','뛰고','달려','조깅','뛰어','달리','뛰었다','달렸다'],
@@ -625,11 +625,11 @@ function startSceneSequence(canvas, text, style){
 
     // Walk/run: characters drift across screen after arriving
     if(allArrived&&(scene.action==='walk'||scene.action==='run')){
-      const driftSpd=scene.action==='run'?S*1.8:S*0.85;
+      const driftSpd=scene.action==='run'?S*3.2:S*1.6;
       for(const ch of ss.chars){
         ch.x+=ch.facing*driftSpd*dt;
-        if(ch.x>W*.88){ch.facing=-1;}
-        if(ch.x<W*.12){ch.facing=1;}
+        if(ch.x>W*.85){ch.facing=-1;}
+        if(ch.x<W*.15){ch.facing=1;}
       }
     }
 
@@ -1167,13 +1167,15 @@ function getJoints(action,emotion,t,S){
   };
 
   if(action==='walk'||action==='run'){
-    const spd=action==='run'?5:3.2;
-    const sw=Math.sin(t*spd)*S*(action==='run'?.65:.52);
-    return {head:{x:0,y:b.head.y+Math.sin(t*spd*2)*S*.04},neck:b.neck,
-      elbL:{x:-S*.7,y:-S*1.7-sw*.25},elbR:{x:S*.7,y:-S*1.7+sw*.25},
-      hanL:{x:-S*.65,y:-S*.8-sw*.4},hanR:{x:S*.65,y:-S*.8+sw*.4},
-      hip:b.hip,knL:{x:-S*.3+sw*.3,y:S*.9-clamp(sw,0,S)*.5},knR:{x:S*.3-sw*.3,y:S*.9+clamp(sw,0,S)*.5},
-      ftL:{x:-S*.5+sw*.52,y:S*1.88},ftR:{x:S*.5-sw*.52,y:S*1.88}};
+    const spd=action==='run'?5.5:3.8;
+    const sw=Math.sin(t*spd)*S*(action==='run'?.85:.72);
+    const bob=Math.abs(Math.sin(t*spd*2))*S*(action==='run'?.08:.05);
+    return {head:{x:sw*.08,y:b.head.y-bob},neck:{x:sw*.04,y:b.neck.y-bob*.5},
+      elbL:{x:-S*.75,y:-S*1.7-sw*.35},elbR:{x:S*.75,y:-S*1.7+sw*.35},
+      hanL:{x:-S*.68,y:-S*.75-sw*.55},hanR:{x:S*.68,y:-S*.75+sw*.55},
+      hip:{x:sw*.06,y:bob*.3},
+      knL:{x:-S*.32+sw*.45,y:S*.9-clamp(sw,0,S)*.6},knR:{x:S*.32-sw*.45,y:S*.9+clamp(sw,0,S)*.6},
+      ftL:{x:-S*.55+sw*.7,y:S*1.88},ftR:{x:S*.55-sw*.7,y:S*1.88}};
   }
   if(action==='jump'||emotion==='happy'&&action==='idle'){
     const bounce=Math.abs(Math.sin(t*2.8))*S*.48;
@@ -1222,24 +1224,26 @@ function getJoints(action,emotion,t,S){
       hip:b.hip,knL:b.knL,knR:b.knR,ftL:b.ftL,ftR:b.ftR};
   }
   if(action==='cry'||(['sad','lonely'].includes(emotion)&&action==='idle')){
-    // Shoulders shake while crying
-    const sob=Math.sin(t*6)*S*.06;
-    const shk=Math.sin(t*9)*S*.04;
-    return {head:{x:S*.22+shk,y:-S*1.48+sob*.4},neck:{x:S*.08,y:-S*.9},
-      elbL:{x:-S*.82+shk,y:-S*.5+sob},elbR:{x:S*.82+shk,y:-S*.5+sob},
-      hanL:{x:-S*.28,y:S*.18+sob*.5},hanR:{x:S*.32,y:S*.18+sob*.5},
-      hip:{x:shk*.3,y:S*.2},knL:{x:-S*1.1,y:S*1.2},knR:{x:S*1.1,y:S*1.2},
+    const sob=Math.sin(t*7)*S*.18;
+    const shk=Math.sin(t*11)*S*.12;
+    return {head:{x:S*.28+shk,y:-S*1.42+sob*.5},neck:{x:S*.12,y:-S*.88},
+      elbL:{x:-S*.78+shk,y:-S*.45+sob*.8},elbR:{x:S*.78+shk,y:-S*.45+sob*.8},
+      hanL:{x:-S*.22,y:S*.22+sob},hanR:{x:S*.28,y:S*.22+sob},
+      hip:{x:shk*.4,y:S*.22},knL:{x:-S*1.1,y:S*1.2},knR:{x:S*1.1,y:S*1.2},
       ftL:{x:-S*1.5,y:S*.55},ftR:{x:S*1.5,y:S*.55}};
   }
   if(action==='laugh'||action==='dance'){
-    const sh=Math.sin(t*(action==='dance'?2.2:6))*S*.10;
-    const sw=Math.sin(t*2.2)*S*.18;
-    const legSw=action==='dance'?Math.sin(t*2.2)*S*.15:0;
-    return {head:{x:sh,y:b.head.y+sh*.5},neck:{x:sh*.5,y:b.neck.y},
-      elbL:{x:-S*1.35+sw,y:-S*2.15},elbR:{x:S*1.35-sw,y:-S*2.15},
-      hanL:{x:-S*1.85+sw*1.5,y:-S*2.78},hanR:{x:S*1.85-sw*1.5,y:-S*2.78},
-      hip:{x:sh,y:-legSw*.2},knL:{x:-S*.42+legSw,y:S*.88},knR:{x:S*.42-legSw,y:S*.88},
-      ftL:{x:-S*.68+legSw*.8,y:S*1.88},ftR:{x:S*.68-legSw*.8,y:S*1.88}};
+    const spd=action==='dance'?2.5:5.5;
+    const sh=Math.sin(t*spd)*S*(action==='dance'?.22:.18);
+    const sw=Math.sin(t*(action==='dance'?2.5:4))*S*(action==='dance'?.38:.28);
+    const bounce=action==='dance'?Math.abs(Math.sin(t*2.5))*S*.28:0;
+    const legSw=action==='dance'?Math.sin(t*2.5)*S*.32:0;
+    return {head:{x:sh,y:b.head.y+sh*.5-bounce},neck:{x:sh*.4,y:b.neck.y-bounce*.5},
+      elbL:{x:-S*1.45+sw,y:-S*2.25-bounce*.3},elbR:{x:S*1.45-sw,y:-S*2.25-bounce*.3},
+      hanL:{x:-S*2.0+sw*1.8,y:-S*2.95-bounce*.4},hanR:{x:S*2.0-sw*1.8,y:-S*2.95-bounce*.4},
+      hip:{x:sh*.8,y:-legSw*.25-bounce*.2},
+      knL:{x:-S*.45+legSw,y:S*.88+bounce*.3},knR:{x:S*.45-legSw,y:S*.88+bounce*.3},
+      ftL:{x:-S*.72+legSw*.9,y:S*1.88},ftR:{x:S*.72-legSw*.9,y:S*1.88}};
   }
   if(action==='angry'||(emotion==='angry'&&action==='idle')){
     const shk=Math.sin(t*13)*S*.10;
@@ -1298,14 +1302,19 @@ function getJoints(action,emotion,t,S){
       ftL:{x:-S*.48+sw*.45,y:S*1.88},ftR:{x:S*.48-sw*.45,y:S*1.88}};
   }
 
-  // Default idle — visible arm sway + weight shift
-  const sway=Math.sin(t*1.4)*S*.10;
-  const armL=Math.sin(t*1.8+0.8)*S*.12;
-  const armR=Math.sin(t*1.8)*S*.12;
-  return {head:{x:sway*.6,y:b.head.y+sway*.4},neck:{x:sway*.3,y:b.neck.y},
-    elbL:{x:-S*.88,y:-S*1.72-armL*.4},elbR:{x:S*.88,y:-S*1.72-armR*.4},
-    hanL:{x:-S*.88,y:-S*.88-armL},hanR:{x:S*.88,y:-S*.88-armR},
-    hip:{x:sway*.4,y:0},knL:b.knL,knR:b.knR,ftL:b.ftL,ftR:b.ftR};
+  // Default idle — very visible rocking + arm swing
+  const sway=Math.sin(t*1.4)*S*.32;
+  const bob=Math.abs(Math.sin(t*2.8))*S*.10;
+  const armL=Math.sin(t*2.0+1.0)*S*.42;
+  const armR=Math.sin(t*2.0)*S*.42;
+  const kneeL=Math.sin(t*2.0+1.0)*S*.12;
+  const kneeR=Math.sin(t*2.0)*S*.12;
+  return {head:{x:sway*.55,y:b.head.y-bob+sway*.3},neck:{x:sway*.28,y:b.neck.y-bob*.5},
+    elbL:{x:-S*.92,y:-S*1.72-armL*.45},elbR:{x:S*.92,y:-S*1.72-armR*.45},
+    hanL:{x:-S*.88,y:-S*.80-armL},hanR:{x:S*.88,y:-S*.80-armR},
+    hip:{x:sway*.38,y:bob*.2},
+    knL:{x:-S*.3+kneeL*.2,y:S*.9+kneeL*.3},knR:{x:S*.3+kneeR*.2,y:S*.9+kneeR*.3},
+    ftL:{x:-S*.5+kneeL*.35,y:S*1.88},ftR:{x:S*.5+kneeR*.35,y:S*1.88}};
 }
 
 // ── OVERLAYS ──
