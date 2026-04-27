@@ -670,12 +670,14 @@ function startSceneSequence(canvas, text, style){
     drawSubtitle(ctx,W,H,scene.text,ss.localT,scene.duration);
     drawProgress(ctx,W,sceneIdx,scenes.length);
 
-    // DEBUG overlay — remove after fixing
+    // DEBUG overlay
     ctx.save();
-    ctx.fillStyle='rgba(0,0,0,0.55)';ctx.fillRect(8,8,260,52);
-    ctx.fillStyle='#0F0';ctx.font='bold 13px monospace';ctx.textAlign='left';
-    ctx.fillText('ACTION: '+scene.action+'  t='+ss.localT.toFixed(1),14,26);
-    ctx.fillText('frame#'+Math.round(ss.localT*60)+' allArrived='+allArrived,14,46);
+    const dbx=W/2, dby=H/2;
+    ctx.fillStyle='rgba(0,0,0,0.75)';ctx.fillRect(dbx-140,dby-36,280,72);
+    ctx.fillStyle='#00FF00';ctx.font='bold 15px monospace';ctx.textAlign='center';
+    ctx.fillText('ACTION: '+scene.action,dbx,dby-12);
+    ctx.fillText('t='+ss.localT.toFixed(2)+'  frame='+Math.round(ss.localT*60),dbx,dby+14);
+    ctx.fillText(fading?'FADING':'PLAYING',dbx,dby+36);
     ctx.restore();
 
     // Overlays
