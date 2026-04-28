@@ -1060,3 +1060,119 @@ function drawWeatherEffect(ctx, W, H, weather, elapsed) {
 }
 
 let S_GLOBAL = 40;
+
+// ── EMOTION PARTICLES ──
+function drawEmotionParticles(ctx, W, H, GY, S, emotion, t) {
+  ctx.save();
+
+  if (emotion === 'love') {
+    for (let i = 0; i < 9; i++) {
+      const seed = i * 137.5;
+      const x = ((seed * 0.618) % (W * 0.72)) + W * 0.14;
+      const progress = ((t * 26 + seed * 0.6) % (GY * 0.75)) / (GY * 0.75);
+      const y = GY - S * 0.3 - progress * GY * 0.75;
+      const scale = 0.55 + (i % 3) * 0.22;
+      ctx.globalAlpha = Math.max(0, 1 - progress) * 0.82;
+      ctx.fillStyle = i % 2 === 0 ? '#FF6B9D' : '#FF4081';
+      _drawHeart(ctx, x, y, S * 0.17 * scale);
+    }
+  } else if (emotion === 'happy' || emotion === 'excited') {
+    const col = emotion === 'excited' ? '#C084FC' : '#F5C842';
+    for (let i = 0; i < 11; i++) {
+      const seed = i * 173.2;
+      const progress = ((t * 24 + seed * 0.5) % (GY * 0.78)) / (GY * 0.78);
+      const x = ((seed * 0.618) % (W * 0.78)) + W * 0.11;
+      const y = GY - progress * GY * 0.78;
+      const scale = (0.48 + (i % 4) * 0.14) * (1 + Math.sin(t * 4.5 + i) * 0.18);
+      ctx.globalAlpha = Math.max(0, 1 - progress) * 0.88;
+      ctx.fillStyle = col;
+      _drawStar(ctx, x, y, S * 0.13 * scale);
+    }
+  } else if (emotion === 'sad' || emotion === 'lonely') {
+    ctx.fillStyle = 'rgba(100,160,220,0.72)';
+    for (let i = 0; i < 14; i++) {
+      const seed = i * 91.3;
+      const x = ((seed * 0.618) % (W * 0.82)) + W * 0.09;
+      const progress = ((t * 52 + seed * 2) % H) / H;
+      const y = progress * H;
+      ctx.globalAlpha = Math.min(progress * 5, 1) * Math.max(0, 1 - (progress - 0.82) * 8) * 0.72;
+      const r = S * 0.052;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x, y - r);
+      ctx.quadraticCurveTo(x + r, y - r * 2.2, x, y - r * 3.5);
+      ctx.quadraticCurveTo(x - r, y - r * 2.2, x, y - r);
+      ctx.fill();
+    }
+  } else if (emotion === 'angry') {
+    for (let i = 0; i < 11; i++) {
+      const seed = i * 112.7;
+      const progress = ((t * 62 + seed) % (H * 0.52)) / (H * 0.52);
+      const x = W * 0.28 + ((seed * 0.618) % (W * 0.44));
+      const y = GY - progress * H * 0.52;
+      ctx.globalAlpha = Math.max(0, 1 - progress) * 0.85;
+      ctx.fillStyle = progress < 0.35 ? '#FF4500' : '#FFD700';
+      const r = S * (0.038 + (1 - progress) * 0.042);
+      ctx.beginPath();
+      ctx.arc(x + Math.sin(t * 9 + i) * S * 0.07, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (emotion === 'peaceful') {
+    for (let i = 0; i < 8; i++) {
+      const seed = i * 154.3;
+      const x = ((seed * 0.618) % (W * 0.76)) + W * 0.12;
+      const progress = ((t * 17 + seed) % (GY * 0.82)) / (GY * 0.82);
+      const y = GY - progress * GY * 0.82;
+      const r = S * (0.065 + (i % 3) * 0.038);
+      ctx.globalAlpha = Math.max(0, 1 - progress) * 0.52;
+      ctx.strokeStyle = '#6EE7B7'; ctx.lineWidth = S * 0.028;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(110,231,183,0.12)';
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  } else if (emotion === 'night') {
+    for (let i = 0; i < 10; i++) {
+      const seed = i * 163.1;
+      const x = ((seed * 0.618) % (W * 0.8)) + W * 0.1;
+      const y = ((seed * 0.382) % (H * 0.45)) + H * 0.05;
+      const flicker = 0.4 + Math.sin(t * 3.5 + i * 1.8) * 0.35;
+      ctx.globalAlpha = flicker * 0.75;
+      ctx.fillStyle = '#FFF8DC';
+      const r = S * (0.028 + (i % 3) * 0.014);
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function _drawHeart(ctx, x, y, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(size / 15, size / 15);
+  ctx.beginPath();
+  ctx.moveTo(0, -4);
+  ctx.bezierCurveTo(0, -10, -8, -10, -8, -3);
+  ctx.bezierCurveTo(-8, 4, 0, 9, 0, 13);
+  ctx.bezierCurveTo(0, 9, 8, 4, 8, -3);
+  ctx.bezierCurveTo(8, -10, 0, -10, 0, -4);
+  ctx.fill();
+  ctx.restore();
+}
+
+function _drawStar(ctx, x, y, size) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const outer = (i * Math.PI * 2 / 5) - Math.PI / 2;
+    const inner = outer + Math.PI / 5;
+    if (i === 0) ctx.moveTo(Math.cos(outer) * size, Math.sin(outer) * size);
+    else ctx.lineTo(Math.cos(outer) * size, Math.sin(outer) * size);
+    ctx.lineTo(Math.cos(inner) * size * 0.42, Math.sin(inner) * size * 0.42);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}

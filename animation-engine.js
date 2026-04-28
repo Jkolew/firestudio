@@ -240,6 +240,9 @@ async function startSceneSequence(canvas,text,artStyle){
     // 6. Weather (on top of characters)
     drawWeatherEffect(ctx,W,H,scene.weather,elapsed);
 
+    // 6.5 Emotion particles
+    drawEmotionParticles(ctx,W,H,GY,S,scene.emotion,elapsed);
+
     // 7. Top-left page title
     ctx.save();
     const margin = Math.max(48, W * 0.07);
