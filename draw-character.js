@@ -626,6 +626,24 @@ function drawProps(ctx, W, H, GY, S, props, chars, artStyle, t, location) {
         }
         ctx.stroke();
       }
+    } else if (prop === 'tv') {
+      const tvx = cx + S*1.2, tvy = GY - S*1.5;
+      // Frame
+      ctx.fillStyle = '#1A1A2A';
+      roundRect(ctx, tvx-S*.50, tvy-S*.34, S*1.0, S*.62, S*.05).fill(); ctx.stroke();
+      // Screen glow
+      ctx.fillStyle = `rgba(40,90,200,${0.55+Math.sin(t*1.8)*0.18})`;
+      roundRect(ctx, tvx-S*.42, tvx-S*.34-tvy+tvy-S*.26, S*.84, S*.46, S*.03);
+      ctx.beginPath(); roundRect(ctx, tvx-S*.42, tvy-S*.26, S*.84, S*.46, S*.03); ctx.fill();
+      // Scanline effect
+      ctx.strokeStyle = `rgba(255,255,255,${0.07+Math.sin(t*3)*0.03})`; ctx.lineWidth = S*.02;
+      for(let li=0;li<4;li++){
+        ctx.beginPath(); ctx.moveTo(tvx-S*.42, tvy-S*.20+li*S*.10); ctx.lineTo(tvx+S*.42, tvy-S*.20+li*S*.10); ctx.stroke();
+      }
+      // Stand
+      ctx.strokeStyle = ol; ctx.lineWidth = S*.08;
+      ctx.beginPath(); ctx.moveTo(tvx, tvy+S*.28); ctx.lineTo(tvx, tvy+S*.44); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(tvx-S*.24, tvy+S*.44); ctx.lineTo(tvx+S*.24, tvy+S*.44); ctx.stroke();
     } else if (prop === 'bike') {
       const kpx = cx + S*2.4, kpy = GY;
       const spin = t*4;

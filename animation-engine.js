@@ -53,7 +53,7 @@ function drawNotebookBinding(ctx, W, H) {
 async function analyzeWithGemini(text) {
   const userApiKey = localStorage.getItem('GEMINI_API_KEY') || DEVELOPER_API_KEY;
   if (!userApiKey) return null;
-  const prompt = `Analyze the following Korean diary sentence and return a JSON object for a character animation. Sentence: "${text}" Rules: 1. Select the BEST 'action' from: throw, hug, kiss, cry, laugh, eat, drink, game, sleep, walk, run, work, talk, wave, sit, cook, shop, dance, swim, climb, jump, idle. 2. Select the BEST 'location' from: snow, pcroom, cafe, home, outside, sea, mountain, school, store, office. 3. Select 1-2 'props' from: snowball, ball, phone, game, book, coffee, food, bag, money, music, umbrella. 4. Detect 'emotion' from: happy, sad, angry, peaceful, excited, lonely, night, rain, love, neutral. 5. 'charCount': Count the TOTAL number of people involved. Max 5. 6. 'time_of_day': Infer from context. Choose: "morning", "afternoon", "evening", "night". Default "afternoon". 7. 'intensity': Float 0.0–1.0. 8. 'weather': Infer weather. Return Format: {"action": "...", "location": "...", "props": ["..."], "emotion": "...", "charCount": number, "time_of_day": "...", "intensity": number, "weather": "..."}`;
+  const prompt = `Analyze the following Korean diary sentence and return a JSON object for a character animation. Sentence: "${text}" Rules: 1. Select the BEST 'action' from: throw, hug, kiss, cry, laugh, eat, drink, game, sleep, walk, run, work, talk, wave, sit, cook, shop, dance, swim, climb, jump, idle. 2. Select the BEST 'location' from: snow, pcroom, cafe, home, outside, sea, mountain, school, store, office. 3. Select 0-3 'props' that appear in the sentence from: snowball, ball, phone, game, book, coffee, food, bag, money, music, umbrella, car, boat, bike, tv. Only include a prop if the sentence clearly mentions it. 4. Detect 'emotion' from: happy, sad, angry, peaceful, excited, lonely, night, rain, love, neutral. 5. 'charCount': Count the TOTAL number of people involved (narrator + others). Max 5. 6. 'time_of_day': Infer from context. Choose: "morning", "afternoon", "evening", "night". Default "afternoon". 7. 'intensity': Float 0.0–1.0. 8. 'weather': Infer weather. Return Format: {"action": "...", "location": "...", "props": ["..."], "emotion": "...", "charCount": number, "time_of_day": "...", "intensity": number, "weather": "..."}`;
   try {
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userApiKey}`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -106,12 +106,19 @@ const LOCATION_ACTION_DEFAULT = {
   outside:'walk', snow:'walk',
 };
 const PROP_DETECT={
-  snowball:['눈'], ball:['공','축구','농구'], phone:['폰','핸드폰','스마트폰','전화'],
-  game:['게임','닌텐도','조이스틱'], book:['책','교재','소설','만화'],
-  coffee:['커피','카페라테','아메리카','라떼'], food:['밥','음식','라면','치킨','피자','떡볶'],
-  bag:['가방','백팩','쇼핑백'], money:['돈','용돈','지갑'],
-  music:['노래','음악','이어폰','헤드폰'], umbrella:['우산'],
-  car:['자동차','버스','지하철','택시','기차','드라이브','운전','ktx','전철'],
+  snowball:['눈싸움','눈사람','눈뭉치','눈공','눈을 던','눈밭에서'],
+  ball:['공을','공이','공으로','공 차','공 던','축구','농구','야구','배구'],
+  phone:['폰','핸드폰','스마트폰','전화'],
+  game:['게임','닌텐도','조이스틱'],
+  book:['책','교재','소설','만화'],
+  coffee:['커피','카페라테','아메리카','라떼'],
+  food:['밥','음식','라면','치킨','피자','떡볶'],
+  bag:['가방','백팩','쇼핑백'],
+  money:['돈','용돈','지갑'],
+  music:['노래','음악','이어폰','헤드폰'],
+  umbrella:['우산'],
+  tv:['티비','드라마','영화를','유튜브','넷플','영화 봤','드라마 봤','tv를'],
+  car:['자동차','버스','지하철','택시','기차','드라이브','운전','ktx','전철','차를 타','차에 타'],
   bike:['자전거','킥보드','오토바이'],
   boat:['보트','크루즈','항구','항해','선박','배를 타','유람선'],
 };
@@ -134,8 +141,19 @@ function detectProps(text){const p=[];for(const[pr,ws]of Object.entries(PROP_DET
 function detectAction(text,location){for(const[a,ws]of Object.entries(ACTIONS)){if(ws.some(w=>text.includes(w)))return a;}return LOCATION_ACTION_DEFAULT[location]||'idle';}
 function detectLocation(text){for(const[l,ws]of Object.entries(LOCATIONS)){if(ws.some(w=>text.includes(w)))return l;}return null;}
 const _ALONE_W=['혼자','나만','나 혼자','각자','헤어졌','혼자서'];
-const _PERSON_W=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생','남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','그녀','남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원'];
-function buildCumulativeCharCounts(sentences){let c=1;return sentences.map(s=>{if(_ALONE_W.some(w=>s.includes(w)))c=1;else if(_PERSON_W.some(w=>s.includes(w)))c=Math.min(c+1,4);return c;});}
+const _PERSON_W=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생','남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','교수','그녀','남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원','우리'];
+// 한 문장에 여러 명 언급 시 개수만큼 증가 (최대 5명)
+function buildCumulativeCharCounts(sentences){
+  let c=1;
+  return sentences.map(s=>{
+    if(_ALONE_W.some(w=>s.includes(w))){c=1;}
+    else{
+      const matches=_PERSON_W.filter(w=>s.includes(w)).length;
+      if(matches>0)c=Math.min(c+matches,5);
+    }
+    return c;
+  });
+}
 function parseSentences(text){return text.replace(/([.!?！？。])\s*/g,'$1\n').split('\n').map(s=>s.trim()).filter(s=>s.length>1);}
 
 async function startSceneSequence(canvas,text,artStyle){
@@ -146,7 +164,7 @@ async function startSceneSequence(canvas,text,artStyle){
 
   const scenes=await Promise.all(sentences.map(async(s,i)=>{
     const aiResult=await analyzeWithGemini(s);
-    if(aiResult){return{text:s,emotion:aiResult.emotion||detectEmotion(text),action:aiResult.action||'idle',location:aiResult.location||null,props:aiResult.props||[],charCount:aiResult.charCount||charCounts[i],time_of_day:aiResult.time_of_day||'afternoon',intensity:aiResult.intensity??.5,weather:aiResult.weather||'clear'};}
+    if(aiResult){const localProps=detectProps(s);const mergedProps=[...new Set([...(aiResult.props||[]),...localProps])];return{text:s,emotion:aiResult.emotion||detectEmotion(text),action:aiResult.action||'idle',location:aiResult.location||null,props:mergedProps,charCount:aiResult.charCount||charCounts[i],time_of_day:aiResult.time_of_day||'afternoon',intensity:aiResult.intensity??.5,weather:aiResult.weather||'clear'};}
     const emo=detectEmotion(s); const loc=detectLocation(s); return{text:s,emotion:emo,action:detectAction(s,loc),location:loc,props:detectProps(s),charCount:charCounts[i],time_of_day:emo==='night'?'night':'afternoon',intensity:.5,weather:emo==='rain'?'rain':'clear'};
   }));
 
