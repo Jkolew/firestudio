@@ -152,7 +152,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 <!-- PLAYER -->
 <div class="view hidden" id="v-player">
   <canvas id="anim-canvas"></canvas>
-  <div id="dbg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:red;color:#fff;padding:16px 20px;border-radius:10px;z-index:999;font:bold 14px monospace;text-align:center;pointer-events:none;display:none"></div>
   <div class="player-top">
     <div class="player-meta">
       <div class="player-date" id="player-date"></div>
@@ -379,18 +378,10 @@ function setStyle(btn){
 function generateAnimation(){
   const text=document.getElementById('diary-textarea').value.trim();
   if(!text){alert('일기를 먼저 작성해주세요.');return;}
-  const dbg=document.getElementById('dbg');
-  dbg.style.display='block';dbg.textContent='⏳ 시작 중...';
-  try{
-    const emotion=detectEmotion(text);
-    const entry={date:state.writeDate,text,style:state.style,emotion,ts:Date.now()};
-    saveEntry(entry);
-    playEntry(entry,'player');
-    dbg.textContent='✅ 시작됨 v'+Date.now()%10000;
-  }catch(e){
-    dbg.style.background='red';
-    dbg.textContent='❌ ERROR: '+e.message;
-  }
+  const emotion=detectEmotion(text);
+  const entry={date:state.writeDate,text,style:state.style,emotion,ts:Date.now()};
+  saveEntry(entry);
+  playEntry(entry,'player');
 }
 function playEntry(entry,viewId='player'){
   state.currentEntry=entry;
@@ -678,12 +669,6 @@ function startSceneSequence(canvas, text, style){
     // Subtitle + progress
     drawSubtitle(ctx,W,H,scene.text,ss.localT,scene.duration);
     drawProgress(ctx,W,sceneIdx,scenes.length);
-
-    // DEBUG — update HTML element each frame
-    if(Math.round(ss.localT*10)%5===0){
-      const d=document.getElementById('dbg');
-      if(d)d.textContent='ACTION:'+scene.action+' t='+ss.localT.toFixed(1)+(fading?' FADE':' PLAY');
-    }
 
     // Overlays
     grainOverlay(ctx,W,H,.016);
@@ -1294,9 +1279,11 @@ function getJoints(action,emotion,t,S){
       ftL:{x:-S*1.9,y:S*.2},ftR:{x:-S*1.6,y:S*.55}};
   }
   if(action==='look'||(emotion==='night'&&action==='idle')){
-    return {head:{x:-S*.08,y:-S*1.8+Math.sin(t*.6)*S*.02},neck:{x:-S*.04,y:-S*1.15},
-      elbL:{x:-S*.88,y:-S*.62},elbR:{x:S*.88,y:-S*.62},
-      hanL:{x:-S*1.32,y:S*.12},hanR:{x:S*1.32,y:S*.12},
+    const bob=Math.sin(t*1.4)*S*.08;
+    const armR=Math.sin(t*2.2)*S*.14;
+    return {head:{x:S*.06,y:b.head.y-bob*.5},neck:{x:S*.03,y:b.neck.y},
+      elbL:{x:-S*.88,y:-S*.62},elbR:{x:S*.82,y:-S*1.35+armR*.4},
+      hanL:{x:-S*1.32,y:S*.10},hanR:{x:S*.75,y:-S*1.9+armR},
       hip:{x:0,y:S*.25},knL:{x:-S*1.05,y:S*1.25},knR:{x:S*1.05,y:S*1.25},
       ftL:{x:-S*1.5,y:S*.55},ftR:{x:S*1.5,y:S*.55}};
   }
