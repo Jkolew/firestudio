@@ -111,6 +111,9 @@ const PROP_DETECT={
   coffee:['커피','카페라테','아메리카','라떼'], food:['밥','음식','라면','치킨','피자','떡볶'],
   bag:['가방','백팩','쇼핑백'], money:['돈','용돈','지갑'],
   music:['노래','음악','이어폰','헤드폰'], umbrella:['우산'],
+  car:['자동차','버스','지하철','택시','기차','드라이브','운전','ktx','전철'],
+  bike:['자전거','킥보드','오토바이'],
+  boat:['보트','크루즈','항구','항해','선박','배를 타','유람선'],
 };
 const LOCATIONS={
   snow:   ['눈이 오','눈밭','눈 오','설원','눈이'],
@@ -130,7 +133,9 @@ function emotionColor(e){return EMOTIONS[e]?.color||'#A1A1AA';}
 function detectProps(text){const p=[];for(const[pr,ws]of Object.entries(PROP_DETECT)){if(ws.some(w=>text.includes(w)))p.push(pr);}return p;}
 function detectAction(text,location){for(const[a,ws]of Object.entries(ACTIONS)){if(ws.some(w=>text.includes(w)))return a;}return LOCATION_ACTION_DEFAULT[location]||'idle';}
 function detectLocation(text){for(const[l,ws]of Object.entries(LOCATIONS)){if(ws.some(w=>text.includes(w)))return l;}return null;}
-function buildCumulativeCharCounts(sentences){let c=1;return sentences.map(s=>{if(s.includes('혼자'))c=1;else if(['친구','가족','엄마','아빠'].some(w=>s.includes(w)))c=Math.min(c+1,3);return c;});}
+const _ALONE_W=['혼자','나만','나 혼자','각자','헤어졌','혼자서'];
+const _PERSON_W=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생','남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','그녀','남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원'];
+function buildCumulativeCharCounts(sentences){let c=1;return sentences.map(s=>{if(_ALONE_W.some(w=>s.includes(w)))c=1;else if(_PERSON_W.some(w=>s.includes(w)))c=Math.min(c+1,4);return c;});}
 function parseSentences(text){return text.replace(/([.!?！？。])\s*/g,'$1\n').split('\n').map(s=>s.trim()).filter(s=>s.length>1);}
 
 async function startSceneSequence(canvas,text,artStyle){

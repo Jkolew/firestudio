@@ -283,6 +283,9 @@ const PROP_DETECT={
   food:     ['밥을','밥이','음식','먹었','점심','저녁','아침','라면','피자','치킨','초밥','국밥'],
   music:    ['음악','노래를','이어폰','헤드폰','듣고','플레이리스트','멜론','스포티파이'],
   tv:       ['티비','tv를','드라마','영화를','유튜브','넷플릭스'],
+  car:      ['자동차','버스','지하철','택시','기차','드라이브','차를 타','차에 타','차로 갔','운전','ktx','전철'],
+  bike:     ['자전거','킥보드','오토바이'],
+  boat:     ['배를 타','배에 탔','보트','크루즈','유람선','항구','항해','선박'],
 };
 function detectProps(text){
   const lower=text.toLowerCase();
@@ -302,13 +305,15 @@ function detectAction(text){
 
 // ═══ LOCATION DETECTION ═══
 const LOCATIONS={
-  home:  ['집','방','침대','소파','거실','주방','부엌','화장실','현관'],
-  school:['학교','교실','도서관','캠퍼스','수업','강의','수강','등교','하교','학원'],
-  outside:['밖','공원','길','거리','야외','산책로','나가서','나왔다','밖에서','공원에서','길에서','광장','해변','해수욕','바닷가','산','등산','놀이터'],
-  cafe:  ['카페','커피숍','스타벅스','이디야','빽다방','카페에서'],
-  work:  ['회사','사무실','직장','업무','출근','퇴근','일터'],
-  night: ['밤','새벽','야밤','밤에','새벽에','늦은 밤','야심한'],
-  rain:  ['비','우산','비가','비 맞','우산을','비가 왔','빗속','천둥','번개'],
+  home:     ['집','방','침대','소파','거실','주방','부엌','화장실','현관'],
+  school:   ['학교','교실','도서관','캠퍼스','수업','강의','수강','등교','하교','학원'],
+  sea:      ['바다','해변','해수욕','바닷가','항구','선착장'],
+  mountain: ['등산','산에','산길','산을','트레킹'],
+  outside:  ['밖','공원','길','거리','야외','산책로','나가서','나왔다','밖에서','공원에서','길에서','광장','놀이터'],
+  cafe:     ['카페','커피숍','스타벅스','이디야','빽다방','카페에서'],
+  work:     ['회사','사무실','직장','업무','출근','퇴근','일터'],
+  night:    ['밤','새벽','야밤','밤에','새벽에','늦은 밤','야심한'],
+  rain:     ['비','우산','비가','비 맞','우산을','비가 왔','빗속','천둥','번개'],
 };
 function detectLocation(text){
   for(const[loc,words]of Object.entries(LOCATIONS)){
@@ -319,7 +324,8 @@ function detectLocation(text){
 
 // ═══ CHARACTER COUNT ═══
 const PERSON_WORDS=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생',
-  '남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','그녀','상대방'];
+  '남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','그녀','상대방',
+  '남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원','교수'];
 function countCharacters(text){
   let n=1;
   for(const w of PERSON_WORDS){if(text.includes(w)){n=Math.min(n+1,3);break;}}
@@ -1039,6 +1045,118 @@ function drawProps(ctx,W,H,GY,S,props,chars,artStyle,t){
       ctx.strokeStyle=color;ctx.lineWidth=S*.1;
       ctx.beginPath();ctx.moveTo(px,py+S*1.2);ctx.lineTo(px,py+S*1.5);
       ctx.moveTo(px-S*.55,py+S*1.5);ctx.lineTo(px+S*.55,py+S*1.5);ctx.stroke();
+      ctx.restore();
+    }
+    else if(prop==='car'){
+      const px=cx+S*2.8,py=GY;
+      const spin=t*3.5;
+      ctx.save();
+      ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.5,S*.09);
+      // Body
+      ctx.fillStyle='#2A5FC8';
+      ctx.beginPath();
+      ctx.moveTo(px-S*1.1,py);ctx.lineTo(px+S*1.1,py);
+      ctx.lineTo(px+S*1.1,py-S*.5);ctx.lineTo(px+S*.6,py-S*.5);
+      ctx.lineTo(px+S*.38,py-S*.95);ctx.lineTo(px-S*.28,py-S*.95);
+      ctx.lineTo(px-S*.82,py-S*.5);ctx.lineTo(px-S*1.1,py-S*.5);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      // Windows
+      ctx.fillStyle='rgba(160,220,255,0.6)';
+      ctx.beginPath();
+      ctx.moveTo(px-S*.76,py-S*.53);ctx.lineTo(px-S*.3,py-S*.53);
+      ctx.lineTo(px-S*.22,py-S*.88);ctx.lineTo(px-S*.32,py-S*.88);
+      ctx.closePath();ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(px-S*.19,py-S*.53);ctx.lineTo(px+S*.36,py-S*.53);
+      ctx.lineTo(px+S*.32,py-S*.88);ctx.lineTo(px-S*.24,py-S*.88);
+      ctx.closePath();ctx.fill();
+      // Wheels with spinning spokes
+      [px-S*.65,px+S*.65].forEach(wx=>{
+        ctx.fillStyle='#151520';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.5,S*.09);
+        ctx.beginPath();ctx.arc(wx,py+S*.12,S*.32,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.strokeStyle='rgba(200,200,200,0.5)';ctx.lineWidth=S*.038;
+        for(let i=0;i<6;i++){
+          const a=spin+i*(Math.PI/3);
+          ctx.beginPath();ctx.moveTo(wx,py+S*.12);
+          ctx.lineTo(wx+Math.cos(a)*S*.24,py+S*.12+Math.sin(a)*S*.24);ctx.stroke();
+        }
+        ctx.fillStyle='#888';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,S*.06);
+        ctx.beginPath();ctx.arc(wx,py+S*.12,S*.09,0,Math.PI*2);ctx.fill();ctx.stroke();
+      });
+      ctx.restore();
+    }
+    else if(prop==='boat'){
+      const px=W*.68,py=GY;
+      const rock=Math.sin(t*1.6)*0.055;
+      ctx.save();
+      ctx.translate(px,py-S*.18);ctx.rotate(rock);
+      ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.5,S*.09);
+      // Hull
+      ctx.fillStyle='#7B3B1A';
+      ctx.beginPath();
+      ctx.moveTo(-S*1.15,-S*.12);ctx.lineTo(S*1.15,-S*.12);
+      ctx.lineTo(S*.9,S*.4);ctx.lineTo(-S*.9,S*.4);ctx.closePath();
+      ctx.fill();ctx.stroke();
+      // Deck rail
+      ctx.fillStyle='#C89050';
+      ctx.beginPath();
+      ctx.moveTo(-S*1.15,-S*.12);ctx.lineTo(S*1.15,-S*.12);
+      ctx.lineTo(S*1.05,-S*.28);ctx.lineTo(-S*1.05,-S*.28);ctx.closePath();
+      ctx.fill();ctx.stroke();
+      // Mast
+      ctx.lineWidth=Math.max(2,S*.09);
+      ctx.beginPath();ctx.moveTo(S*.08,-S*.28);ctx.lineTo(S*.08,-S*1.75);ctx.stroke();
+      // Sail
+      ctx.fillStyle='rgba(250,245,230,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(S*.08,-S*1.72);ctx.quadraticCurveTo(S*.95,-S*.95,S*.08,-S*.28);
+      ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.restore();
+      // Animated waves
+      ctx.strokeStyle='rgba(80,150,220,0.45)';ctx.lineWidth=S*.065;
+      for(let i=0;i<3;i++){
+        const wy=py+S*(.05+i*.16);
+        const ph=t*1.9+i*1.2;
+        ctx.beginPath();let fw=true;
+        for(let xw=px-S*1.7;xw<=px+S*1.7;xw+=7){
+          const yw=wy+Math.sin((xw-px)*.11+ph)*S*.065;
+          if(fw){ctx.moveTo(xw,yw);fw=false;}else ctx.lineTo(xw,yw);
+        }
+        ctx.stroke();
+      }
+    }
+    else if(prop==='bike'){
+      const px=cx+S*2.4,py=GY;
+      const spin=t*4;
+      ctx.save();
+      ctx.strokeStyle=color;
+      // Wheels with spinning spokes
+      [px-S*.58,px+S*.58].forEach(wx=>{
+        ctx.lineWidth=Math.max(1.5,S*.1);ctx.strokeStyle=color;
+        ctx.beginPath();ctx.arc(wx,py-S*.44,S*.44,0,Math.PI*2);ctx.stroke();
+        ctx.lineWidth=S*.038;ctx.strokeStyle='rgba(180,180,180,0.6)';
+        for(let i=0;i<8;i++){
+          const a=spin+i*Math.PI*.25;
+          ctx.beginPath();ctx.moveTo(wx,py-S*.44);
+          ctx.lineTo(wx+Math.cos(a)*S*.41,py-S*.44+Math.sin(a)*S*.41);ctx.stroke();
+        }
+        ctx.fillStyle='#777';ctx.strokeStyle=color;ctx.lineWidth=Math.max(1,S*.07);
+        ctx.beginPath();ctx.arc(wx,py-S*.44,S*.09,0,Math.PI*2);ctx.fill();ctx.stroke();
+      });
+      // Frame
+      ctx.lineWidth=Math.max(1.5,S*.11);ctx.strokeStyle=color;
+      ctx.beginPath();
+      ctx.moveTo(px-S*.58,py-S*.44);ctx.lineTo(px-S*.05,py-S*.9);
+      ctx.lineTo(px+S*.58,py-S*.44);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(px-S*.08,py-S*.88);ctx.lineTo(px+S*.58,py-S*.44);ctx.stroke();
+      // Seat
+      ctx.beginPath();ctx.moveTo(px-S*.25,py-S*.92);ctx.lineTo(px+S*.15,py-S*.92);ctx.stroke();
+      ctx.lineWidth=Math.max(1,S*.08);
+      ctx.beginPath();ctx.moveTo(px-S*.04,py-S*.92);ctx.lineTo(px-S*.04,py-S*.88);ctx.stroke();
+      // Handlebar
+      ctx.lineWidth=Math.max(1.5,S*.11);
+      ctx.beginPath();ctx.moveTo(px+S*.5,py-S*.84);ctx.lineTo(px+S*.54,py-S*.58);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(px+S*.38,py-S*.94);ctx.lineTo(px+S*.62,py-S*.94);ctx.stroke();
       ctx.restore();
     }
   }

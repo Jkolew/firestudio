@@ -552,6 +552,111 @@ function drawProps(ctx, W, H, GY, S, props, chars, artStyle, t, location) {
       ctx.fillStyle = '#888';
       ctx.beginPath(); ctx.arc(px-S*.03, py-S*.2, S*.04, 0, Math.PI*2); ctx.fill();
       ctx.beginPath(); ctx.arc(px+S*.03, py-S*.2, S*.04, 0, Math.PI*2); ctx.fill();
+    } else if (prop === 'car') {
+      const cpx = cx + S*2.8, cpy = GY;
+      const spin = t*3.5;
+      ctx.strokeStyle = ol; ctx.lineWidth = S*0.08;
+      // Body
+      ctx.fillStyle = '#5580E8';
+      ctx.beginPath();
+      ctx.moveTo(cpx-S*1.1,cpy); ctx.lineTo(cpx+S*1.1,cpy);
+      ctx.lineTo(cpx+S*1.1,cpy-S*.5); ctx.lineTo(cpx+S*.6,cpy-S*.5);
+      ctx.lineTo(cpx+S*.38,cpy-S*.95); ctx.lineTo(cpx-S*.28,cpy-S*.95);
+      ctx.lineTo(cpx-S*.82,cpy-S*.5); ctx.lineTo(cpx-S*1.1,cpy-S*.5);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Windows
+      ctx.fillStyle = 'rgba(180,225,255,0.65)';
+      ctx.beginPath();
+      ctx.moveTo(cpx-S*.76,cpy-S*.53); ctx.lineTo(cpx-S*.3,cpy-S*.53);
+      ctx.lineTo(cpx-S*.22,cpy-S*.88); ctx.lineTo(cpx-S*.32,cpy-S*.88);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cpx-S*.19,cpy-S*.53); ctx.lineTo(cpx+S*.36,cpy-S*.53);
+      ctx.lineTo(cpx+S*.32,cpy-S*.88); ctx.lineTo(cpx-S*.24,cpy-S*.88);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      // Wheels with spinning spokes
+      [cpx-S*.65, cpx+S*.65].forEach(wx => {
+        ctx.fillStyle = '#222'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.08;
+        ctx.beginPath(); ctx.arc(wx, cpy+S*.12, S*.32, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        ctx.strokeStyle = 'rgba(160,140,120,0.55)'; ctx.lineWidth = S*0.038;
+        for (let i=0; i<6; i++) {
+          const a = spin + i*(Math.PI/3);
+          ctx.beginPath(); ctx.moveTo(wx, cpy+S*.12);
+          ctx.lineTo(wx+Math.cos(a)*S*.24, cpy+S*.12+Math.sin(a)*S*.24); ctx.stroke();
+        }
+        ctx.fillStyle = '#AAA'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.06;
+        ctx.beginPath(); ctx.arc(wx, cpy+S*.12, S*.09, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      });
+    } else if (prop === 'boat') {
+      const bpx = W*0.68, bpy = GY;
+      const rock = Math.sin(t*1.6)*0.055;
+      ctx.save();
+      ctx.translate(bpx, bpy-S*.18); ctx.rotate(rock);
+      ctx.strokeStyle = ol; ctx.lineWidth = S*0.08;
+      // Hull
+      ctx.fillStyle = '#A0521E';
+      ctx.beginPath();
+      ctx.moveTo(-S*1.15,-S*.12); ctx.lineTo(S*1.15,-S*.12);
+      ctx.lineTo(S*.9,S*.4); ctx.lineTo(-S*.9,S*.4); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // Deck rail
+      ctx.fillStyle = '#D4A850';
+      ctx.beginPath();
+      ctx.moveTo(-S*1.15,-S*.12); ctx.lineTo(S*1.15,-S*.12);
+      ctx.lineTo(S*1.05,-S*.28); ctx.lineTo(-S*1.05,-S*.28); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // Mast
+      ctx.lineWidth = S*0.08;
+      ctx.beginPath(); ctx.moveTo(S*.08,-S*.28); ctx.lineTo(S*.08,-S*1.75); ctx.stroke();
+      // Sail
+      ctx.fillStyle = 'rgba(255,252,240,0.92)';
+      ctx.beginPath();
+      ctx.moveTo(S*.08,-S*1.72); ctx.quadraticCurveTo(S*.95,-S*.95, S*.08,-S*.28);
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.restore();
+      // Animated waves
+      ctx.strokeStyle = 'rgba(60,120,200,0.38)'; ctx.lineWidth = S*0.055;
+      for (let i=0; i<3; i++) {
+        const wy = bpy + S*(0.05+i*0.16);
+        const ph = t*1.9 + i*1.2;
+        ctx.beginPath(); let fw = true;
+        for (let xw = bpx-S*1.7; xw <= bpx+S*1.7; xw += 7) {
+          const yw = wy + Math.sin((xw-bpx)*0.11+ph)*S*0.065;
+          if (fw) { ctx.moveTo(xw,yw); fw=false; } else ctx.lineTo(xw,yw);
+        }
+        ctx.stroke();
+      }
+    } else if (prop === 'bike') {
+      const kpx = cx + S*2.4, kpy = GY;
+      const spin = t*4;
+      ctx.strokeStyle = ol;
+      // Wheels with spinning spokes
+      [kpx-S*.58, kpx+S*.58].forEach(wx => {
+        ctx.lineWidth = S*0.1; ctx.strokeStyle = ol;
+        ctx.beginPath(); ctx.arc(wx, kpy-S*.44, S*.44, 0, Math.PI*2); ctx.stroke();
+        ctx.lineWidth = S*0.036; ctx.strokeStyle = 'rgba(120,100,80,0.5)';
+        for (let i=0; i<8; i++) {
+          const a = spin + i*Math.PI*0.25;
+          ctx.beginPath(); ctx.moveTo(wx, kpy-S*.44);
+          ctx.lineTo(wx+Math.cos(a)*S*.41, kpy-S*.44+Math.sin(a)*S*.41); ctx.stroke();
+        }
+        ctx.fillStyle = '#888'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.07;
+        ctx.beginPath(); ctx.arc(wx, kpy-S*.44, S*.09, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+      });
+      // Frame
+      ctx.lineWidth = S*0.1; ctx.strokeStyle = ol;
+      ctx.beginPath();
+      ctx.moveTo(kpx-S*.58, kpy-S*.44); ctx.lineTo(kpx-S*.05, kpy-S*.9);
+      ctx.lineTo(kpx+S*.58, kpy-S*.44); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(kpx-S*.08, kpy-S*.88); ctx.lineTo(kpx+S*.58, kpy-S*.44); ctx.stroke();
+      // Seat
+      ctx.beginPath(); ctx.moveTo(kpx-S*.25, kpy-S*.92); ctx.lineTo(kpx+S*.15, kpy-S*.92); ctx.stroke();
+      ctx.lineWidth = S*0.08;
+      ctx.beginPath(); ctx.moveTo(kpx-S*.04, kpy-S*.92); ctx.lineTo(kpx-S*.04, kpy-S*.88); ctx.stroke();
+      // Handlebar
+      ctx.lineWidth = S*0.1;
+      ctx.beginPath(); ctx.moveTo(kpx+S*.5, kpy-S*.84); ctx.lineTo(kpx+S*.54, kpy-S*.58); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(kpx+S*.38, kpy-S*.94); ctx.lineTo(kpx+S*.62, kpy-S*.94); ctx.stroke();
     }
     ctx.restore();
   }
