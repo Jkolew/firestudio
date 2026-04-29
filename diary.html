@@ -323,28 +323,40 @@ function detectLocation(text){
 }
 
 // ═══ CHARACTER COUNT ═══
-const PERSON_WORDS=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생',
-  '남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','그녀','상대방',
-  '남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원','교수'];
-function countCharacters(text){
-  let n=1;
-  for(const w of PERSON_WORDS){if(text.includes(w)){n=Math.min(n+1,3);break;}}
-  if(text.includes('우리')&&text.length>15) n=Math.min(n+1,3);
+// 실제 인물/역할 명사 (각각 +1명)
+const PERSON_NOUNS=[
+  '남자친구','여자친구','남친','여친','부모님','친구들','선생님','교수님',
+  '친구','가족','엄마','아빠','형','오빠','언니','누나','동생',
+  '선배','후배','동료','그녀','상대방','남편','와이프','아내',
+  '애인','사람들','친척','이웃','팀원','교수',
+  '우리','저희','둘이','셋이','여럿이','다같이',
+];
+// 같이 있음을 암시하는 동사/부사 (refs=0일 때만 +1)
+const INTERACT_TRIGGERS=['만났','데이트','함께','같이','나타났','합류','놀러왔','찾아왔','데려','오더니'];
+const ALONE_WORDS=['혼자','나만','나 혼자','집에 왔','집에 돌아','혼자서','각자','헤어졌','혼자였'];
+
+function _countPersonRefs(s){
+  // 긴 단어 먼저 매칭해 부분문자열 중복 방지 (남자친구 → 친구 중복 제거)
+  let rem=s, n=0;
+  for(const w of [...PERSON_NOUNS].sort((a,b)=>b.length-a.length)){
+    if(rem.includes(w)){n++;rem=rem.replaceAll(w,' ');}
+  }
   return n;
 }
-
-// ═══ CUMULATIVE CHARACTER COUNT ═══
-const MEET_WORDS=['만났','왔다','왔어','왔음','나타났','합류','같이 왔','데려','오더니','놀러왔','찾아왔'];
-const ALONE_WORDS=['혼자','나만','나 혼자','집에 왔','집에 돌아','혼자서','각자','헤어졌','혼자였'];
 function buildCumulativeCharCounts(sentences){
   let count=1;
   return sentences.map(s=>{
     if(ALONE_WORDS.some(w=>s.includes(w))){count=1;return count;}
-    const hasPerson=PERSON_WORDS.some(w=>s.includes(w));
-    if(hasPerson&&count<4) count=Math.min(count+1,4);
+    const refs=_countPersonRefs(s);
+    const hasInteract=INTERACT_TRIGGERS.some(w=>s.includes(w));
+    // 인물 명사가 없어도 상호작용 단어가 있으면 +1
+    const add=Math.min(refs+(refs===0&&hasInteract?1:0), 3);
+    if(add>0) count=Math.min(count+add,4);
     return count;
   });
 }
+// (legacy, unused)
+const PERSON_WORDS=PERSON_NOUNS;
 
 // ═══ SENTENCE PARSING ═══
 function parseSentences(text){
@@ -534,14 +546,16 @@ function startSceneSequence(canvas, text, style){
     duration:clamp(sentence.length/8, 3.5, 7),
   }));
 
+  function _makeTargets(n,close,W){
+    if(n<=1) return [{x:W*.5,facing:1}];
+    if(n===2) return [{x:W*(close?.41:.36),facing:1},{x:W*(close?.59:.64),facing:-1}];
+    if(n===3) return [{x:W*.22,facing:1},{x:W*.5,facing:-1},{x:W*.78,facing:-1}];
+    return [{x:W*.14,facing:1},{x:W*.38,facing:1},{x:W*.62,facing:-1},{x:W*.86,facing:-1}];
+  }
   function makeSceneState(scene){
     const n=scene.charCount;
     const close=['hug','kiss','talk','love'].includes(scene.action)||scene.emotion==='love';
-    const targets=n===1
-      ?[{x:W*.5,facing:1}]
-      :n===2
-        ?[{x:W*(close?.41:.36),facing:1},{x:W*(close?.59:.64),facing:-1}]
-        :[{x:W*.28,facing:1},{x:W*.5,facing:1},{x:W*.72,facing:-1}];
+    const targets=_makeTargets(n,close,W);
 
     const chars=targets.map((tgt,i)=>({
       x:i%2===0?-S*4:W+S*4,
@@ -580,11 +594,7 @@ function startSceneSequence(canvas, text, style){
     const scene=scenes[idx];
     const n=scene.charCount;
     const close=['hug','kiss','talk','love'].includes(scene.action)||scene.emotion==='love';
-    const targets=n===1
-      ?[{x:W*.5,facing:1}]
-      :n===2
-        ?[{x:W*(close?.41:.36),facing:1},{x:W*(close?.59:.64),facing:-1}]
-        :[{x:W*.28,facing:1},{x:W*.5,facing:1},{x:W*.72,facing:-1}];
+    const targets=_makeTargets(n,close,W);
     const ss=sceneStates[idx];
     // Rebuild chars array to match new charCount
     ss.chars=targets.map((tgt,i)=>({
