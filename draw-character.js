@@ -140,6 +140,11 @@ function drawCharacter(ctx, cx, cy, S, action, emotion, t, facing, _s, _st, char
     hy = headCY + S*0.06;
     aLhx = -S*0.35; aLhy = bTopY + S*0.58;
     aRhx =  S*0.35; aRhy = bTopY + S*0.58;
+  } else if (action === 'look') {
+    hy = headCY - S*0.09;
+    hx = S*0.05;
+    aLhx = -S*0.55; aLhy = bTopY + S*1.08;
+    aRhx =  S*0.55; aRhy = bTopY + S*1.08;
   } else {
     // idle — gentle breathing sway
     const sway = Math.sin(t*1.8)*S*0.05;
@@ -243,7 +248,10 @@ function drawHead(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
 
 // ── FACE ──
 function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
-  const isHappy    = ['happy','excited','love'].includes(emotion) || ['laugh','dance','wave'].includes(action);
+  const isHappy    = emotion === 'happy' || ['laugh','dance','wave'].includes(action);
+  const isLove     = emotion === 'love';
+  const isExcited  = emotion === 'excited';
+  const isPeaceful = emotion === 'peaceful';
   const isCrying   = ['sad','lonely'].includes(emotion) || action === 'cry';
   const isAngry    = emotion === 'angry';
   const isSleeping = action === 'sleep';
@@ -262,7 +270,7 @@ function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
     ctx.save();
     ctx.translate(ex, eyeY - r*0.42);
     if (isAngry) ctx.rotate(side * -0.32);
-    else if (isHappy) ctx.rotate(side * 0.14);
+    else if (isHappy || isLove || isExcited) ctx.rotate(side * 0.14);
     ctx.beginPath();
     ctx.moveTo(-eyeR*0.85, 0); ctx.lineTo(eyeR*0.85, 0);
     ctx.stroke();
@@ -270,13 +278,27 @@ function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
   });
 
   // Eyes
-  if (isSleeping || isHappy) {
+  if (isSleeping || isHappy || isPeaceful) {
     ctx.strokeStyle = ol; ctx.lineWidth = S * 0.055;
     [eyeLX, eyeRX].forEach(ex => {
       ctx.beginPath();
       ctx.arc(ex, eyeY + eyeR*0.18, eyeR*0.88, Math.PI*1.15, Math.PI*-0.15);
       ctx.stroke();
     });
+  } else if (isLove) {
+    ctx.fillStyle = '#FFF'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.055;
+    [eyeLX, eyeRX].forEach(ex => {
+      ctx.beginPath(); ctx.arc(ex, eyeY, eyeR, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    });
+    ctx.fillStyle = '#FF4477';
+    [eyeLX, eyeRX].forEach(ex => { _drawHeart(ctx, ex, eyeY + eyeR*0.10, eyeR * 1.2); });
+  } else if (isExcited) {
+    ctx.fillStyle = '#FFF'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.055;
+    [eyeLX, eyeRX].forEach(ex => {
+      ctx.beginPath(); ctx.arc(ex, eyeY, eyeR, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    });
+    ctx.fillStyle = '#FFD700';
+    [eyeLX, eyeRX].forEach(ex => { _drawStar(ctx, ex, eyeY, eyeR * 0.68); });
   } else {
     ctx.fillStyle = '#FFF'; ctx.strokeStyle = ol; ctx.lineWidth = S*0.055;
     [eyeLX, eyeRX].forEach(ex => {
@@ -295,7 +317,7 @@ function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
   }
 
   // Blush
-  if (isHappy || emotion === 'love') {
+  if (isHappy || isLove || isExcited) {
     ctx.fillStyle = 'rgba(255,120,100,0.2)';
     [eyeLX - r*0.14, eyeRX + r*0.14].forEach(bx => {
       ctx.beginPath();
@@ -309,8 +331,12 @@ function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
   ctx.beginPath();
   if (isCrying) {
     ctx.arc(hx, hy + r*0.65, r*0.22, Math.PI+0.25, -0.25);
-  } else if (isHappy) {
+  } else if (isHappy || isExcited) {
     ctx.arc(hx, hy + r*0.33, r*0.28, 0.22, Math.PI-0.22);
+  } else if (isLove) {
+    ctx.arc(hx, hy + r*0.36, r*0.24, 0.18, Math.PI-0.18);
+  } else if (isPeaceful) {
+    ctx.arc(hx, hy + r*0.42, r*0.18, 0.28, Math.PI-0.28);
   } else if (isAngry) {
     ctx.moveTo(hx - r*0.28, hy + r*0.60); ctx.lineTo(hx + r*0.28, hy + r*0.50);
   } else {
@@ -329,6 +355,67 @@ function drawFace(ctx, hx, hy, r, S, p, ol, emotion, action, t) {
     });
   }
 
+  ctx.restore();
+}
+
+// ── SPEECH BUBBLE ──
+function drawSpeechBubble(ctx, cx, headTopY, S, text) {
+  if (!text) return;
+  ctx.save();
+  const fontSize = Math.max(11, S * 0.38);
+  ctx.font = `bold ${fontSize}px 'Noto Serif KR', serif`;
+  const tw = ctx.measureText(text).width;
+  const padX = S * 0.28, padY = S * 0.16;
+  const bw = tw + padX * 2, bh = fontSize + padY * 2;
+  const tailH = S * 0.20;
+  const by = headTopY - tailH - bh - S * 0.05;
+  const bx = cx - bw / 2;
+  const tailY = by + bh;
+
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(55,38,18,0.50)';
+  ctx.lineWidth = S * 0.045;
+
+  // Tail (drawn first so bubble covers the seam)
+  ctx.beginPath();
+  ctx.moveTo(cx - S*0.10, tailY);
+  ctx.lineTo(cx, tailY + tailH);
+  ctx.lineTo(cx + S*0.10, tailY);
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fill(); ctx.stroke();
+
+  // Bubble body
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  roundRect(ctx, bx, by, bw, bh, S * 0.12).fill();
+  ctx.stroke();
+
+  // Text
+  ctx.fillStyle = 'rgba(38,22,8,0.82)';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text, cx, by + bh / 2);
+  ctx.restore();
+}
+
+// ── EMOTION MOOD OVERLAY ──
+function drawEmotionOverlay(ctx, W, H, emotion) {
+  const tints = {
+    love:    'rgba(255,130,180,0.07)',
+    night:   'rgba(20,30,100,0.09)',
+    angry:   'rgba(200,50,30,0.07)',
+    happy:   'rgba(255,218,80,0.05)',
+    sad:     'rgba(80,120,200,0.07)',
+    peaceful:'rgba(100,210,160,0.05)',
+    excited: 'rgba(180,100,240,0.06)',
+    lonely:  'rgba(100,120,160,0.06)',
+    rain:    'rgba(60,90,150,0.07)',
+  };
+  const tint = tints[emotion];
+  if (!tint) return;
+  ctx.save();
+  ctx.fillStyle = tint;
+  ctx.fillRect(0, 0, W, H);
   ctx.restore();
 }
 

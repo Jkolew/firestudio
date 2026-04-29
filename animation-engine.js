@@ -86,6 +86,7 @@ const ACTIONS={
   eat:   ['먹었','먹어','먹고','먹음','먹','식사','점심','저녁','아침','밥을','밥 먹','음식','라면','치킨','피자','햄버거','삼겹','떡볶','분식','간식','맛집','배달','드셨'],
   drink: ['마셨','마셔','마시고','마심','커피','음료','물을','술을','음주','차를','카페라테','아메리카노'],
   game:  ['게임','롤','스팀','닌텐도','피씨방','피방','pc방','플스','오버워치','마인크래프트','배그'],
+  look:  ['시청','드라마 봤','영화 봤','티비 봤','tv 봤','유튜브 봤','넷플 봤','영화관'],
   sleep: ['잤','잠을','자고','졸려','누웠','침대','피곤','꿈을','잠자','취침','낮잠','자버렸','늦잠','피곤했'],
   walk:  ['걸었','걸어','걷고','산책','걷기','걸어서','걸음','보행','갔다','갔어','갔음','왔다','왔어','왔음','나갔','나왔','다녀왔','외출','나가','나와'],
   run:   ['뛰었','뛰어','달렸','달리','조깅','뛰고','뛰어가','달려'],
@@ -140,6 +141,11 @@ function emotionColor(e){return EMOTIONS[e]?.color||'#A1A1AA';}
 function detectProps(text){const p=[];for(const[pr,ws]of Object.entries(PROP_DETECT)){if(ws.some(w=>text.includes(w)))p.push(pr);}return p;}
 function detectAction(text,location){for(const[a,ws]of Object.entries(ACTIONS)){if(ws.some(w=>text.includes(w)))return a;}return LOCATION_ACTION_DEFAULT[location]||'idle';}
 function detectLocation(text){for(const[l,ws]of Object.entries(LOCATIONS)){if(ws.some(w=>text.includes(w)))return l;}return null;}
+function extractKeywords(text){
+  const wm=[['친구','친구'],['남자친구','남자친구'],['여자친구','여자친구'],['남친','남친'],['여친','여친'],['가족','가족'],['엄마','엄마'],['아빠','아빠'],['오빠','오빠'],['언니','언니'],['동생','동생'],['선배','선배'],['라면','라면'],['치킨','치킨'],['피자','피자'],['커피','커피'],['케이크','케이크'],['아이스크림','아이스크림'],['삼겹','삼겹살'],['떡볶','떡볶이'],['햄버거','햄버거'],['공부','공부'],['게임','게임'],['영화','영화'],['드라마','드라마'],['음악','음악'],['산책','산책'],['운동','운동'],['쇼핑','쇼핑'],['요리','요리'],['여행','여행'],['수영','수영'],['등산','등산'],['사랑','사랑'],['행복','행복'],['슬프','슬픔'],['설레','설렘'],['피곤','피곤'],['카페','카페'],['학교','학교'],['바다','바다'],['공원','공원'],['비','비'],['눈','눈'],['밤','밤'],['아침','아침'],['저녁','저녁']];
+  const found=[];for(const[k,l]of wm){if(text.includes(k)){found.push(l);if(found.length>=2)break;}}
+  return found.length>0?found.join(' '):null;
+}
 const _ALONE_W=['혼자','나만','나 혼자','각자','헤어졌','혼자서'];
 const _PERSON_W=['친구','가족','엄마','아빠','형','오빠','언니','누나','동생','남자친구','여자친구','남친','여친','선배','후배','동료','선생님','교수님','교수','그녀','남편','와이프','아내','부모님','애인','사람들','친척','이웃','친구들','팀원','우리'];
 // 한 문장에 여러 명 언급 시 개수만큼 증가 (최대 5명)
@@ -164,8 +170,8 @@ async function startSceneSequence(canvas,text,artStyle){
 
   const scenes=await Promise.all(sentences.map(async(s,i)=>{
     const aiResult=await analyzeWithGemini(s);
-    if(aiResult){const localProps=detectProps(s);const mergedProps=[...new Set([...(aiResult.props||[]),...localProps])];return{text:s,emotion:aiResult.emotion||detectEmotion(text),action:aiResult.action||'idle',location:aiResult.location||null,props:mergedProps,charCount:aiResult.charCount||charCounts[i],time_of_day:aiResult.time_of_day||'afternoon',intensity:aiResult.intensity??.5,weather:aiResult.weather||'clear'};}
-    const emo=detectEmotion(s); const loc=detectLocation(s); return{text:s,emotion:emo,action:detectAction(s,loc),location:loc,props:detectProps(s),charCount:charCounts[i],time_of_day:emo==='night'?'night':'afternoon',intensity:.5,weather:emo==='rain'?'rain':'clear'};
+    if(aiResult){const localProps=detectProps(s);const mergedProps=[...new Set([...(aiResult.props||[]),...localProps])];return{text:s,emotion:aiResult.emotion||detectEmotion(text),action:aiResult.action||'idle',location:aiResult.location||null,props:mergedProps,charCount:aiResult.charCount||charCounts[i],time_of_day:aiResult.time_of_day||'afternoon',intensity:aiResult.intensity??.5,weather:aiResult.weather||'clear',keywords:extractKeywords(s)};}
+    const emo=detectEmotion(s); const loc=detectLocation(s); return{text:s,emotion:emo,action:detectAction(s,loc),location:loc,props:detectProps(s),charCount:charCounts[i],time_of_day:emo==='night'?'night':'afternoon',intensity:.5,weather:emo==='rain'?'rain':'clear',keywords:extractKeywords(s)};
   }));
 
   let sceneIdx=-1,startTime=performance.now();
@@ -188,11 +194,13 @@ async function startSceneSequence(canvas,text,artStyle){
         captionContainer.appendChild(cap); state.activeCaption=cap;
       }
       const targetCount = scene.charCount;
-      charStates = Array.from({length:targetCount},(_,i)=>({
-        targetX:W/2+(i-(targetCount-1)/2)*S*2.5,
-        x: charStates[i] ? charStates[i].x : W/2+(i-(targetCount-1)/2)*S*2.5,
-        y:GY, arrived:true, facing:1, opacity: charStates[i] ? 1.0 : 0.0
-      }));
+      const _closeAct=['hug','kiss'].includes(scene.action);
+      const _medAct=['talk','eat','drink'].includes(scene.action);
+      const _sp=_closeAct?S*1.2:_medAct?S*1.9:S*2.5;
+      charStates = Array.from({length:targetCount},(_,i)=>{
+        const tx=W/2+(i-(targetCount-1)/2)*_sp;
+        return{targetX:tx,x:charStates[i]?charStates[i].x:tx,y:GY,arrived:true,facing:targetCount>=2?(i<targetCount/2?1:-1):1,opacity:charStates[i]?1.0:0.0};
+      });
     }
 
     charStates.forEach(ch=>{ch.x+=(ch.targetX-ch.x)*0.08; if(ch.opacity<1)ch.opacity+=0.05;});
@@ -237,11 +245,17 @@ async function startSceneSequence(canvas,text,artStyle){
       ctx.restore();
     }
 
+    // 5.5 Speech bubble above lead character
+    if(scene.keywords&&charStates.length>0){const ch=charStates[0];ctx.save();ctx.globalAlpha=Math.min(ch.opacity,1);drawSpeechBubble(ctx,ch.x,ch.y-S*3.55,S,scene.keywords);ctx.restore();}
+
     // 6. Weather (on top of characters)
     drawWeatherEffect(ctx,W,H,scene.weather,elapsed);
 
     // 6.5 Emotion particles
     drawEmotionParticles(ctx,W,H,GY,S,scene.emotion,elapsed);
+
+    // 6.8 Emotion mood overlay
+    drawEmotionOverlay(ctx,W,H,scene.emotion);
 
     // 7. Top-left page title
     ctx.save();
