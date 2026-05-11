@@ -75,6 +75,15 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
   20% { opacity:0.8; }
   100% { transform: translate(20px, -40px); opacity:0; }
 }
+@keyframes bear-jump {
+  0%   { transform: translateY(0) scaleY(1) scaleX(1); }
+  12%  { transform: translateY(3px) scaleY(0.78) scaleX(1.25); }
+  35%  { transform: translateY(-22px) scaleY(1.12) scaleX(0.88); }
+  55%  { transform: translateY(-22px) scaleY(1.08) scaleX(0.92); }
+  72%  { transform: translateY(0) scaleY(0.78) scaleX(1.25); }
+  85%  { transform: translateY(-8px) scaleY(1.05) scaleX(0.95); }
+  100% { transform: translateY(0) scaleY(1) scaleX(1); }
+}
 
 .cal-header{padding:20px 32px 20px;display:flex;align-items:center;justify-content:space-between;}
 .cal-logo{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:600;color:var(--accent);letter-spacing:-.5px;}
@@ -181,15 +190,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
 .mini-bed { width:70px; height:42px; background:#2A2A3A; border-radius:11px 11px 6px 6px; position:relative; border:1.5px solid var(--border); flex-shrink:0; }
 .mini-pillow { width:19px; height:12px; background:#3F3F5F; border-radius:4px; position:absolute; top:5px; left:5px; }
 .mini-blanket { width:50px; height:34px; background:linear-gradient(135deg, var(--accent), #A68B6A); border-radius:7px 0 7px 0; position:absolute; bottom:0; right:0; z-index:2; border-top:1px solid rgba(255,255,255,0.1); }
-.mini-bear { position:absolute; top:3px; left:20px; z-index:3; animation:sleep-wiggle 4s ease-in-out infinite; }
+.mini-bear { position:absolute; top:5px; left:20px; z-index:3; animation:bear-jump 0.75s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
 .mini-bear-head { width:27px; height:22px; background:#7A5C44; border-radius:50%; position:relative; }
 .mini-ear-l, .mini-ear-r { width:10px; height:10px; background:#7A5C44; border-radius:50%; position:absolute; top:-4px; }
 .mini-ear-l { left:-1px; } .mini-ear-r { right:-1px; }
-.mini-eye-l, .mini-eye-r { width:3px; height:2px; background:rgba(0,0,0,0.55); position:absolute; top:10px; border-radius:1px; }
-.mini-eye-l { left:7px; } .mini-eye-r { right:7px; }
-.mini-nose { width:5px; height:3px; background:#4A3425; border-radius:50%; position:absolute; top:15px; left:50%; transform:translateX(-50%); }
-.mini-zzz { position:absolute; top:-13px; right:-5px; color:var(--accent); font-size:9px; font-weight:700; opacity:0; animation:zzz-fly 3s linear infinite; }
-.mini-zzz:nth-child(2) { animation-delay:1.2s; }
+.mini-eye-l, .mini-eye-r { width:4px; height:4px; background:rgba(0,0,0,0.65); position:absolute; top:8px; border-radius:50%; }
+.mini-eye-l { left:6px; } .mini-eye-r { right:6px; }
+.mini-nose { width:5px; height:3px; background:#4A3425; border-radius:50%; position:absolute; top:13px; left:50%; transform:translateX(-50%); }
+.mini-mouth { width:8px; height:4px; border-bottom:2px solid rgba(60,30,10,0.6); border-radius:0 0 4px 4px; position:absolute; top:15px; left:50%; transform:translateX(-50%); }
 .cal-nav-btn { background:none; border:1px solid var(--border); color:var(--muted); padding:5px 11px; border-radius:100px; font-size:12px; font-family:inherit; cursor:pointer; transition:all .2s; white-space:nowrap; }
 .cal-nav-btn:hover { border-color:var(--text); color:var(--text); }
 .cal-month-nav { padding:2px 16px 8px; flex-shrink:0; }
@@ -212,10 +220,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);fon
             <div class="mini-ear-l"></div><div class="mini-ear-r"></div>
             <div class="mini-eye-l"></div><div class="mini-eye-r"></div>
             <div class="mini-nose"></div>
+            <div class="mini-mouth"></div>
           </div>
         </div>
         <div class="mini-blanket"></div>
-        <span class="mini-zzz">z</span><span class="mini-zzz">z</span>
       </div>
       <div class="cal-logo">오늘의 일기</div>
     </div>
